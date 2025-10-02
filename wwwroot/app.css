@@ -1,0 +1,33 @@
+body {
+    background-color: #000000;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: white;
+}
+
+main {
+    padding: 2rem;
+}
+
+header {
+    background-color: #000000;
+    border-bottom: 1px solid #2a2a2a;
+    padding: 10px 1%;
+}
+
+.nav-link {
+    color: #a0a0a0 !important;
+    font-weight: 500;
+}
+
+    .nav-link:hover, .nav-link.active {
+        color: #ffffff !important;
+    }
+
+/* Makes hamburger icon white */
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.55%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+.navbar-toggler {
+    border-color: rgba(255, 255, 255, 0.1);
+}
