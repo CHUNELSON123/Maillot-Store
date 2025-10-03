@@ -1,0 +1,75 @@
+﻿@inherits LayoutComponentBase
+
+<div class="page">
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container-fluid align-items-center">
+                @* --- Logo and Brand Name (Always Visible) --- *@
+                <a class="navbar-brand d-flex align-items-center" href="">
+                    <img src="/Images/maillotstore-logo.jpeg" alt="Maillot Store Logo" class="logo">
+                    <span class="brand-text ms-2">Maillot Store</span>
+                </a>
+
+                @* --- Desktop Navigation & Search --- *@
+                <div class="collapse navbar-collapse" id="main-nav-desktop">
+                    @* --- Search Bar (Desktop) --- *@
+                    <div class="search-container mx-auto d-none d-lg-block">
+                        <input type="text" class="form-control search-bar" placeholder="Search for jerseys...">
+                    </div>
+
+                    @* --- CORRECTED Desktop Nav Links --- *@
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/shop">Shop</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/checkout">Checkout</a></li>
+                    </ul>
+                </div>
+
+                @* --- Mobile Hamburger Button --- *@
+                <button class="navbar-toggler d-lg-none" type="button" @onclick="ToggleNavMenu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+        </nav>
+
+        @* --- Search Bar (Mobile) --- *@
+        <div class="search-container-mobile d-lg-none mt-2 px-3">
+            <input type="text" class="form-control search-bar" placeholder="Search for jerseys...">
+        </div>
+    </header>
+
+    @* --- CORRECTED Mobile Sliding Navigation Menu --- *@
+    <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+        <div class="sidenav-content">
+            <a href="javascript:void(0)" class="closebtn">&times;</a>
+            <a class="nav-link" href="/">Home</a>
+            <a class="nav-link" href="/shop">Shop</a>
+            <a class="nav-link" href="/about">About</a>
+            <a class="nav-link" href="/contact">Contact</a>
+            <a class="nav-link" href="/checkout">Checkout</a>
+        </div>
+    </div>
+
+    @* The PROVEN layout container from our test *@
+    <div class="admin-container">
+        <AdminSidebar />
+        <main class="admin-content">
+            @Body
+        </main>
+    </div>
+</div>
+
+<Footer />
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string NavMenuCssClass => collapseNavMenu ? "sidenav" : "sidenav open";
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

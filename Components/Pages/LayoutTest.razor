@@ -1,0 +1,37 @@
+﻿@page "/admin/test"
+@layout Components.Layout.EmptyLayout
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Layout Test</title>
+    <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
+</head>
+<body style="background-color: #333;">
+
+    <h1 style="color: white; padding: 20px;">Layout Test Page</h1>
+    <p style="color: white; padding: 0 20px;">
+        If you see a red bar below, then the layout logic works.
+        The problem is somewhere in your AdminLayout.razor file.
+    </p>
+
+    <div style="display: flex; flex-direction: row; border: 2px solid yellow;">
+
+        @* The Sidebar Child *@
+        <div style="width: 280px; background-color: red; min-height: 500px; color: white; padding: 20px;">
+            <h2>SIDEBAR</h2>
+            <p>This is the sidebar test.</p>
+        </div>
+
+        @* The Content Child *@
+        <div style="flex-grow: 1; padding: 20px; color: white;">
+            <h2>Main Content</h2>
+            <p>This is the main content area.</p>
+        </div>
+
+    </div>
+
+</body>
+</html>

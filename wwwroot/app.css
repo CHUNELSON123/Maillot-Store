@@ -895,3 +895,87 @@ textarea.form-control {
         background-color: #25D366;
         border-color: #25D366;
 }
+
+/*Influencer dashboard style*/
+/* General container for the dashboard */
+.dashboard-container {
+    padding: 2rem 4rem;
+    color: white;
+    font-family: Arial, sans-serif;
+    max-width: 1200px;
+    margin: auto;
+}
+
+/* Welcome message */
+.welcome-header h1 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 2rem;
+}
+
+/* Referral information section */
+.referral-info {
+    margin-bottom: 3rem;
+}
+
+    .referral-info p {
+        font-size: 1.1rem;
+        margin: 0.5rem 0;
+    }
+
+.copy-link {
+    color: #00aaff; /* A bright blue for the link */
+    text-decoration: underline;
+    display: inline-block;
+    margin-top: 0.5rem;
+}
+
+.share-links {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+    .share-links .social-icon {
+        color: white;
+        font-size: 1.8rem;
+    }
+
+/* Sales and Performance section titles */
+.sales-section h2, .performance-summary h2 {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+}
+
+/* Sales table styling */
+.table-responsive {
+    overflow-x: auto; /* Ensures table is responsive on small screens */
+}
+
+.sales-table {
+    width: 100%;
+    border-collapse: collapse; /* Removes default gaps between cells */
+    margin-bottom: 3rem;
+}
+
+    .sales-table th, .sales-table td {
+        border: 1px solid #555; /* Dark gray border */
+        padding: 1rem;
+        text-align: left;
+        height: 60px; /* Gives the empty rows some height */
+    }
+
+    .sales-table th {
+        font-weight: bold;
+    }
+
+/* Performance summary section */
+.performance-summary p {
+    font-size: 1.1rem;
+    margin: 0.5rem 0;
+}
+
+
+ 

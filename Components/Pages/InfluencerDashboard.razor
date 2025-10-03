@@ -1,0 +1,76 @@
+﻿@page "/influencer-dashboard"
+
+<PageTitle>Influencer Dashboard</PageTitle>
+
+<div class="dashboard-container">
+    @* --- WELCOME HEADER --- *@
+    <div class="welcome-header">
+        <h1>WELCOME, Beh Chu</h1>
+    </div>
+
+    @* --- REFERRAL LINK SECTION --- *@
+    <div class="referral-info">
+        <p>Referral Code: BEHCHU123</p>
+        <p>Referral Link: https://maillotstore.com/?ref=BEHCHU123</p>
+        <a href="#" class="copy-link">Copy Link</a>
+        <div class="share-links">
+            <span>Share Link Via</span>
+            <a href="#" class="social-icon"><i class="fab fa-whatsapp"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+        </div>
+    </div>
+
+    @* --- SALES TABLE SECTION --- *@
+    <div class="sales-section">
+        <h2>Your Sales via Referral Link</h2>
+        <div class="table-responsive">
+            <table class="sales-table">
+                <thead>
+                    <tr>
+                        <th>S/N</th>
+                        <th>Date and Time</th>
+                        <th>Customer Name</th>
+                        <th>Product</th>
+                        <th>Amount</th>
+                        <th>Commission</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @* --- Table rows will be added here later --- *@
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @* --- PERFORMANCE SUMMARY SECTION --- *@
+    <div class="performance-summary">
+        <h2>Your Performance:</h2>
+        <p>Total Sale: 12</p>
+        <p>Commission Earned: 7,500</p>
+        <p>Commission Paid: 5,500</p>
+        <p>Balance Remaining: 2,000</p>
+    </div>
+</div>
+
+@* Font Awesome CDN for social icons *@
+@* Add this to your App.razor or main index.html if not already present *@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">

@@ -1,0 +1,31 @@
+﻿@inject NavigationManager NavigationManager
+
+<div class="admin-sidebar">
+    <nav class="admin-nav">
+        <a href="/admin/dashboard" class="@GetNavLinkClass("/admin/dashboard")">
+            Dashboard
+        </a>
+        <a href="/admin/products" class="@GetNavLinkClass("/admin/products")">
+            Products
+        </a>
+        <a href="/admin/orders" class="@GetNavLinkClass("/admin/orders")">
+            Orders
+        </a>
+        <a href="/admin/influencers" class="@GetNavLinkClass("/admin/influencers")">
+            Influencers
+        </a>
+        <a href="/admin/commission" class="@GetNavLinkClass("/admin/commission")">
+            Commission
+        </a>
+        <a href="/logout" class="nav-link">
+            Logout
+        </a>
+    </nav>
+</div>
+
+@code {
+    private string GetNavLinkClass(string navLink)
+    {
+        return NavigationManager.Uri.EndsWith(navLink, StringComparison.OrdinalIgnoreCase) ? "nav-link active" : "nav-link";
+    }
+}
