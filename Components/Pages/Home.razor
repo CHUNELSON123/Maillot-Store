@@ -1,6 +1,91 @@
 ﻿@page "/"
+@rendermode InteractiveServer
+@using MaillotStore.Components.Account.Shared
+@using MaillotStore.Models
 
-<div style="padding: 2rem; color: white;">
-    <h1><i class="fa-solid fa-house"></i> Home Page</h1>
-    <p>If you see a house icon next to the text, Font Awesome is working correctly.</p>
+<PageTitle>Home</PageTitle>
+
+@* --- HERO BANNER --- *@
+<div class="hero-banner">
+    <div class="hero-content">
+        <h2>Official Jerseys. Unbeatable Style.</h2>
+        <p>Discover premium football jerseys at Maillot Store. Wear your passion and support your team in style.</p>
+        <h3>"Your Premier Destination for Authentic Jerseys" </h3>
+        <a href="/shop" class="btn btn-lg cta-button">
+            <i class="fas fa-shopping-cart me-2"></i> Shop Now
+        </a>
+    </div>
 </div>
+ 
+@* --- FEATURED JERSEYS SECTION --- *@
+<section class="featured-jerseys container section-spacer">
+    <h2 class="text-center mb-4">Featured Jerseys</h2>
+    @if (featuredProducts is not null)
+    {
+        <div class="row g-4">
+            @foreach (var product in featuredProducts)
+            {
+                <div class="col-6 col-lg-4">
+                    <ProductCard Product="product" />
+                </div>
+            }
+        </div>
+    }
+</section>
+ 
+@* --- WHY CHOOSE US SECTION --- *@
+<section class="why-choose-us container section-spacer">
+    <h2 class="text-center mb-4">Why Choose Us?</h2>
+    <div class="row justify-content-center g-4">
+        @* --- Card 1: Authenticity --- *@
+        <div class="col-6 col-lg-4">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-check-circle"></i></div>
+                <h3>Authenticity Guaranteed</h3>
+                <p>Original quality guaranteed from official suppliers.</p>
+            </div>
+        </div>
+
+        @* --- Card 2: Fast Delivery --- *@
+        <div class="col-6 col-lg-4">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-shipping-fast"></i></div>
+                <h3>Fast & Reliable Delivery</h3>
+                <p>Get your jersey delivered quickly and reliable, no matter where you are.</p>
+            </div>
+        </div>
+
+        @* --- Card 3: Easy Ordering --- *@
+        <div class="col-6 col-lg-4">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-mouse-pointer"></i></div>
+                <h3>Easy Ordering Process</h3>
+                <p> Our user-friendly platform makes ordering your favorite jerseys a breeze.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+@* --- BECOME AN INFLUENCER SECTION --- *@
+<section class="influencer-cta section-spacer">
+    <div class="container text-center">
+        <h2>Become an Influencer</h2>
+        <p class.="lead"> Promote our jerseys, share your unique link, and earn commissions on every sale. Join the Maillot Store family today.</p>
+        <a href="/influencer-signup" class="btn btn-lg cta-button-influencer">SignUp Now</a>
+    </div>
+</section>
+
+@code {
+    private List<Product>? featuredProducts;
+
+    protected override void OnInitialized()
+    {
+        featuredProducts = new List<Product>
+        {
+            new Product { ProductId = 1, Name = "Manchester United", Season = "HOME (2025/2026)", Price = 60000, ImageUrl = "/Images/liv.jpeg" },
+            new Product { ProductId = 2, Name = "Real Madrid", Season = "AWAY (2025/2026)", Price = 65000, ImageUrl = "/Images/real.jpeg" },
+            new Product { ProductId = 3, Name = "Argentina", Season = "HOME (2024/2025)", Price = 55000, ImageUrl = "/Images/psg.jpeg" },
+            new Product { ProductId = 4, Name = "FC Barcelona", Season = "THIRD (2024/2025)", Price = 60000, ImageUrl = "/Images/Barcelona.jpeg" }
+        };
+    }
+}

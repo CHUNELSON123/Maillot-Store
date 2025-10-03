@@ -5,29 +5,392 @@ body {
 }
 
 main {
-    padding: 2rem;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
 }
 
+/* =================================
+   HEADER & NAVIGATION
+   ================================= */
 header {
-    background-color: #000000;
+    background-color: #000;
     border-bottom: 1px solid #2a2a2a;
     padding: 10px 1%;
+    position: sticky;
+    top: 0;
+    z-index: 1030
 }
 
 .nav-link {
     color: #a0a0a0 !important;
-    font-weight: 500;
+    font-weight: 500
 }
 
     .nav-link:hover, .nav-link.active {
-        color: #ffffff !important;
+        color: #fff !important
     }
 
-/* Makes hamburger icon white */
+.logo {
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
+    border: 1px solid #fff;
+    object-fit: cover
+}
+
+.brand-text {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff
+}
+
+.search-container {
+    width: 50%
+}
+
+.search-container-mobile {
+    width: 80%;
+    margin: 0 auto
+}
+
+.search-bar {
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    color: #212529;
+    border-radius: 20px
+}
+
+    .search-bar::placeholder {
+        color: #6c757d
+    }
+
+    .search-bar:focus {
+        background-color: #fff;
+        color: #212529;
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 .25rem rgba(13,110,253,.25)
+    }
+
 .navbar-toggler-icon {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.55%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 0.55)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e")
 }
 
 .navbar-toggler {
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255,255,255,.1)
+}
+
+.sidenav {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 1050;
+    top: 0;
+    right: 0;
+    background-color: #000;
+    overflow-x: hidden;
+    transition: .5s;
+    padding-top: 60px
+}
+
+    .sidenav.open {
+        width: 250px
+    }
+
+    .sidenav a {
+        padding: 8px 8px 8px 32px;
+        text-decoration: none;
+        font-size: 25px;
+        color: #818181;
+        display: block;
+        transition: .3s
+    }
+
+        .sidenav a:hover {
+            color: #f1f1f1
+        }
+
+    .sidenav .closebtn {
+        position: absolute;
+        top: 0;
+        right: 25px;
+        font-size: 36px;
+        margin-left: 50px
+    }
+
+/* =================================
+   HERO BANNER
+   ================================= */
+.hero-banner {
+    position: relative;
+    height: 90vh;
+    background-image: url(/Images/Barcelona.jpeg);
+    background-color: #222;
+    background-size: cover;
+    background-position: center;
+    margin: 10px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    padding: 2rem;
+    border-radius: 10px
+}
+
+    .hero-banner::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to top,rgba(0,0,0,.8),transparent)
+    }
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: left
+}
+
+    .hero-content h1 {
+        font-size: 3.5rem;
+        font-weight: 900;
+        color: #fff;
+        margin: 0;
+        line-height: 1
+    }
+
+    .hero-content p {
+        font-size: 1.25rem;
+        color: #e0e0e0;
+        margin-top: .5rem;
+        margin-bottom: 2rem
+    }
+
+.cta-button {
+    background-color: #fff;
+    color: #000;
+    font-weight: 700;
+    padding: 12px 30px;
+    border-radius: 8px;
+    text-transform: uppercase;
+    transition: all .3s ease;
+    border: none
+}
+
+    .cta-button:hover {
+        background-color: #f0f0f0;
+        transform: translateY(-2px);
+        color: #000
+    }
+
+/* =================================
+   SPACING UTILITIES
+   ================================= */
+.section-spacer {
+    margin-top: 8rem;
+    margin-bottom: 8rem;
+}
+
+/* =================================
+   SHARED SECTION STYLES
+   ================================= */
+.featured-jerseys h2, .why-choose-us h2 {
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #ffffff;
+}
+
+/* =================================
+   PRODUCT CARD SECTION
+   ================================= */
+.product-card {
+    background-color: #000000;
+    border: 1px solid #ffffff;
+    border-radius: 5px;
+    overflow: hidden;
+    text-align: left;
+    height: 100%;
+}
+
+    .product-card .card-img-top {
+        width: 100%;
+        aspect-ratio: 1 / 1; /* This creates a perfect square that scales */
+        object-fit: cover;
+    }
+
+    .product-card .card-body {
+        padding: 1rem;
+    }
+
+    .product-card .card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #ffffff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .product-card .card-season, .product-card .card-price {
+        margin-bottom: 0.75rem;
+    }
+
+.btn-product-action {
+    background-color: #000000; /* Black background */
+    color: #ffffff; /* White text */
+    border: 1px solid #ffffff; /* Thin white border */
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: all 0.2s ease-in-out;
+}
+
+    .btn-product-action:hover {
+        background-color: #ffffff; /* White background on hover */
+        color: #000000; /* Black text on hover */
+    }
+/* =================================
+   WHY CHOOSE US SECTION
+   ================================= */
+.feature-card {
+    background-color: #000000;
+    border: 1px solid #ffffff;
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-align: center;
+    height: 100%;
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    color: #00aaff;
+    margin-bottom: 1rem;
+}
+
+.feature-card h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+/* =================================
+   INFLUENCER CTA SECTION
+   ================================= */
+
+.influencer-cta {
+    position: relative;
+    padding: 2rem 0;
+    border: 1px solid #ffffff;
+    background-image: url('/Images/influencer-bg.jpg'); /* <-- REPLACE WITH YOUR IMAGE */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed; /* Creates a nice parallax effect */
+    color: #ffffff;
+    margin: 50px;
+    border-radius: 5px;
+}
+
+    /* Dark overlay for text readability */
+    .influencer-cta::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.7);
+    }
+
+    /* Ensures content is on top of the overlay */
+    .influencer-cta .container {
+        position: relative;
+        z-index: 2;
+    }
+
+    .influencer-cta h2 {
+        font-size: 3rem;
+        font-weight: 200;
+        text-transform: uppercase;
+    }
+
+    .influencer-cta .lead {
+        font-size: 1.25rem;
+        margin: 1rem auto 2rem;
+        max-width: 600px;
+    }
+
+.cta-button-influencer {
+    background-color: #ffffff;
+    color: #000000;
+    font-weight: bold;
+    padding: 12px 30px;
+    border-radius: 10px; 
+    text-transform: uppercase;
+    transition: transform 0.2s ease-in-out;
+    border: none;
+}
+
+    .cta-button-influencer:hover {
+        transform: scale(1.05);
+        color: #000000;
+    }
+
+/* =================================
+   FOOTER
+   ================================= */
+
+.site-footer {
+    background-color: #000000;
+    color: #a0a0a0;
+    padding: 2rem 0;
+    border-top: 1px solid #2a2a2a;
+    text-align: center;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between; /* This is the key change */
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.footer-links-group {
+    display: flex;
+    gap: 2rem; /* Creates space between "About Us" and "Contact" */
+}
+
+    .footer-links-group a {
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.2s ease-in-out;
+    }
+
+        .footer-links-group a:hover {
+            color: #00aaff;
+        }
+
+.social-icons {
+    display: flex;
+    gap: 0.75rem;
+}
+
+    .social-icons a {
+        display: inline-block;
+        height: 35px;
+        width: 35px;
+        line-height: 35px;
+        text-align: center;
+        border-radius: 50%;
+        background-color: #000000;
+        color: #ffffff;
+        font-size: 1rem;
+        transition: background-color 0.2s ease-in-out;
+    }
+
+        .social-icons a:hover {
+            background-color: #00aaff;
+        }
+
+.footer-bottom p {
+    margin: 0;
+    font-size: 0.9rem;
 }
