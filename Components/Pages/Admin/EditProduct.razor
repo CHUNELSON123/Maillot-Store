@@ -2,42 +2,81 @@
 @using MaillotStore.Components.Layout
 @layout AdminLayout
 
-<PageTitle>Edit Product</PageTitle>
+<PageTitle>Add Product</PageTitle>
 
-<div class="form-container">
-    <div class="form-header">
+<div class="add-product-container">
+    <div class="add-product-header">
         <h1>Edit Product</h1>
+        <button class="back-btn">Back</button>
     </div>
 
-    <div class="form-body">
+    <div class="add-product-form-body">
         <form>
             <div class="form-group">
-                <label for="productName">Product Name</label>
-                <input type="text" id="productName" class="form-control-dark" value="Atletico de madrid hpme jersey...">
+                <label for="productName">Product Name:</label>
+                <input type="text" id="productName" class="form-control-dark">
             </div>
 
             <div class="form-group">
-                <label for="productDescription">Description</label>
-                <textarea id="productDescription" class="form-control-dark" rows="4">Official home jersey for the 2024-2025 season.</textarea>
+                <label for="productPrice">Price:</label>
+                <input type="text" id="productPrice" class="form-control-dark">
             </div>
 
             <div class="form-group">
-                <label for="productPrice">Price</label>
-                <input type="number" id="productPrice" class="form-control-dark" value="15000">
+                <label for="jerseySeason">Jersey Season:</label>
+                <div class="season-inputs">
+                    <select id="jerseySeasonType" class="form-control-dark">
+                        <option>HOME</option>
+                        <option>Away</option>
+                        <option>Third</option>
+                    </select>
+                    <select id="jerseySeasonYear" class="form-control-dark">
+                        <option>2025/2026</option>
+                        <option>2024/2025</option>
+                        <option>2023/2024</option>
+                    </select>
+                </div>
             </div>
 
             <div class="form-group">
-                <label for="productStock">Stock</label>
-                <input type="number" id="productStock" class="form-control-dark" value="45">
+                <label for="stockQuantity">Stock Quantity:</label>
+                <input type="number" id="stockQuantity" class="form-control-dark">
             </div>
 
             <div class="form-group">
-                <label for="imageUrl">Image URL</label>
-                <input type="text" id="imageUrl" class="form-control-dark" value="/images/atletico.jpg">
+                <label for="productDescription">Description:</label>
+                <textarea id="productDescription" class="form-control-dark" rows="5"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Image Upload:</label>
+                <div class="image-upload-container">
+                    <input type="file" id="imageUpload1" class="form-control-file">
+                    <input type="file" id="imageUpload2" class="form-control-file">
+                    <input type="file" id="imageUpload3" class="form-control-file">
+                </div>
+            </div>
+
+            <div class="form-group featured-group">
+                <label>Featured:</label>
+                <div class="featured-options">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="featured" id="featuredYes">
+                        <label class="form-check-label" for="featuredYes">
+                            Yes
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="featured" id="featuredNo" checked>
+                        <label class="form-check-label" for="featuredNo">
+                            No
+                        </label>
+                    </div>
+                </div>
             </div>
 
             <div class="form-actions">
-                <button type="submit" class="btn-submit">Update Product</button>
+                <button type="submit" class="btn-saved">Update</button>
                 <button type="button" class="btn-cancel">Cancel</button>
             </div>
         </form>

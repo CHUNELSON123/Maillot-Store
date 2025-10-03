@@ -1,7 +1,9 @@
 wwwroot\app.css
 wwwroot\bootstrap\bootstrap.min.css
 wwwroot\bootstrap\bootstrap.min.css.map
+wwwroot\css\add-product.css
 wwwroot\css\admin.css
+wwwroot\css\Products.css
 wwwroot\favicon.png
 wwwroot\Images\Barcelona.jpeg
 wwwroot\Images\liv.jpeg
