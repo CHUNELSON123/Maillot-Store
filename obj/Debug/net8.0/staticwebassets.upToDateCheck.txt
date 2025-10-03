@@ -1,10 +1,10 @@
 wwwroot\app.css
 wwwroot\bootstrap\bootstrap.min.css
 wwwroot\bootstrap\bootstrap.min.css.map
+wwwroot\css\admin.css
 wwwroot\favicon.png
 wwwroot\Images\Barcelona.jpeg
 wwwroot\Images\liv.jpeg
 wwwroot\Images\maillotstore-logo.jpeg
 wwwroot\Images\psg.jpeg
 wwwroot\Images\real.jpeg
-wwwroot\css\admin.css

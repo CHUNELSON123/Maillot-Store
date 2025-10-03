@@ -1,0 +1,45 @@
+﻿@page "/admin/edit-product"
+@using MaillotStore.Components.Layout
+@layout AdminLayout
+
+<PageTitle>Edit Product</PageTitle>
+
+<div class="form-container">
+    <div class="form-header">
+        <h1>Edit Product</h1>
+    </div>
+
+    <div class="form-body">
+        <form>
+            <div class="form-group">
+                <label for="productName">Product Name</label>
+                <input type="text" id="productName" class="form-control-dark" value="Atletico de madrid hpme jersey...">
+            </div>
+
+            <div class="form-group">
+                <label for="productDescription">Description</label>
+                <textarea id="productDescription" class="form-control-dark" rows="4">Official home jersey for the 2024-2025 season.</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="productPrice">Price</label>
+                <input type="number" id="productPrice" class="form-control-dark" value="15000">
+            </div>
+
+            <div class="form-group">
+                <label for="productStock">Stock</label>
+                <input type="number" id="productStock" class="form-control-dark" value="45">
+            </div>
+
+            <div class="form-group">
+                <label for="imageUrl">Image URL</label>
+                <input type="text" id="imageUrl" class="form-control-dark" value="/images/atletico.jpg">
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">Update Product</button>
+                <button type="button" class="btn-cancel">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>

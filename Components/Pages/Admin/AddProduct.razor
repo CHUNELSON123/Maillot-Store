@@ -1,0 +1,45 @@
+﻿@page "/admin/add-product"
+@using MaillotStore.Components.Layout
+@layout AdminLayout
+
+<PageTitle>Add Product</PageTitle>
+
+<div class="form-container">
+    <div class="form-header">
+        <h1>Add New Product</h1>
+    </div>
+
+    <div class="form-body">
+        <form>
+            <div class="form-group">
+                <label for="productName">Product Name</label>
+                <input type="text" id="productName" class="form-control-dark" placeholder="e.g., Real Madrid Home Jersey 24/25">
+            </div>
+
+            <div class="form-group">
+                <label for="productDescription">Description</label>
+                <textarea id="productDescription" class="form-control-dark" rows="4" placeholder="Add a detailed description..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="productPrice">Price</label>
+                <input type="number" id="productPrice" class="form-control-dark" placeholder="e.g., 15000">
+            </div>
+
+            <div class="form-group">
+                <label for="productStock">Stock</label>
+                <input type="number" id="productStock" class="form-control-dark" placeholder="e.g., 50">
+            </div>
+
+            <div class="form-group">
+                <label for="imageUrl">Image URL</label>
+                <input type="text" id="imageUrl" class="form-control-dark" placeholder="e.g., /images/real_madrid.jpg">
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">Add Product</button>
+                <button type="button" class="btn-cancel">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
