@@ -843,3 +843,55 @@ textarea.form-control {
         order: 2;
     }
 }
+
+/* === CHECKOUT PAGE STYLES === */
+
+.checkout-container {
+     max-width: 800px;
+      margin: auto;
+        color: #fff;
+}
+
+
+
+.order-summary, .customer-details {
+        background-color: #000000;
+        padding: 2rem;
+        border-radius: 0.5rem;
+}
+
+
+
+.table-dark {
+        background-color: #000000;
+}
+
+
+
+.form-control-dark {
+        background-color: #000000;
+        color: #fff;
+        border: 1px solid #ffff;
+}
+
+
+
+    .form-control-dark::placeholder {
+            color: #ffff;
+   
+}
+
+    .form-control-dark:focus {
+            background-color: #2c2c2c;
+            color: #fff;
+           border-color: #007bff;
+         box-shadow: none;
+    
+}
+
+
+
+.btn-success {
+        background-color: #25D366;
+        border-color: #25D366;
+}

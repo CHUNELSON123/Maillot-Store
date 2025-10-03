@@ -1,0 +1,101 @@
+﻿@page "/checkout"
+@using MaillotStore.Models
+@rendermode InteractiveServer
+
+<PageTitle>Checkout</PageTitle>
+
+<div class="container my-5">
+    <div class="checkout-container">
+        <h1 class="text-center mb-4">Check Out</h1>
+
+        @* --- YOUR ORDER SUMMARY --- *@
+        <div class="order-summary mb-5">
+            <h2 class="mb-3">Your Order Summary</h2>
+            <table class="table table-dark">
+                <thead>
+                    <tr>
+                        <th scope="col">Product</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Price</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in orderItems)
+                    {
+                        <tr>
+                            <td data-label="Product">
+                                <div class="d-flex align-items-center">
+                                    <img src="@item.Product.ImageUrl" alt="@item.Product.Name" class="img-fluid me-3" style="width: 50px;">
+                                    <div>
+                                        <strong>@item.Product.Name</strong><br>
+                                        <small class="text-muted">Size: @item.Product.Sizes</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td data-label="Quantity">
+                                <div class="d-flex align-items-center justify-content-end">
+                                    <button class="btn btn-sm btn-outline-light me-2">-</button>
+                                    <span>@item.Quantity</span>
+                                    <button class="btn btn-sm btn-outline-light ms-2">+</button>
+                                </div>
+                            </td>
+                            <td data-label="Price">FCFA @item.Price.ToString("N0")</td>
+                            <td data-label="Remove"><a href="#" class="text-danger">Remove Item</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div class="text-end">
+                <h3>SUBTOTAL: FCFA @Subtotal.ToString("N0") XAF</h3>
+            </div>
+        </div>
+
+        @* --- CUSTOMER DETAILS --- *@
+        <div class="customer-details">
+            <h2 class="mb-3">Customer Details</h2>
+            <div class="mb-3">
+                <input type="text" class="form-control form-control-dark" placeholder="Name">
+            </div>
+            <div class="mb-3">
+                <input type="text" class="form-control form-control-dark" placeholder="Phone Number">
+            </div>
+            <div class="mb-3">
+                <input type="text" class="form-control form-control-dark" placeholder="Delivery Address">
+            </div>
+            <div class="mb-3">
+                <textarea class="form-control form-control-dark" rows="4" placeholder="Optional Message"></textarea>
+            </div>
+        </div>
+
+        @* --- CHECKOUT BUTTON --- *@
+        <div class="d-grid gap-2 mt-4">
+            <button class="btn btn-lg btn-success">Check Out Via WhatsApp</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<OrderItem> orderItems = new();
+    private decimal Subtotal => orderItems.Sum(item => item.Price * item.Quantity);
+
+    protected override void OnInitialized()
+    {
+        // Dummy data for demonstration
+        orderItems = new List<OrderItem>
+        {
+            new OrderItem
+            {
+                Product = new Product { ProductId = 10, Name = "Atletico de madrid Home Jersey (2025/2026)", ImageUrl = "/Images/real.jpeg", Sizes = "S" },
+                Quantity = 2,
+                Price = 15000
+            },
+            new OrderItem
+            {
+                Product = new Product { ProductId = 10, Name = "Atletico de madrid Home Jersey (2025/2026) - RED & WHITE STRIPES", ImageUrl = "/Images/real.jpeg", Sizes = "S" },
+                Quantity = 1,
+                Price = 30000
+            }
+        };
+    }
+}
