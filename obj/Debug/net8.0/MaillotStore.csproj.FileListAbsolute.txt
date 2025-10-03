@@ -1,3 +1,4 @@
+C:\Users\FLAVIN\Documents\MT\MaillotStore\bin\Debug\net8.0\MaillotStore.dll
 C:\Users\FLAVIN\Documents\MT\MaillotStore\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\FLAVIN\Documents\MT\MaillotStore\bin\Debug\net8.0\appsettings.json
 C:\Users\FLAVIN\Documents\MT\MaillotStore\bin\Debug\net8.0\MaillotStore.staticwebassets.runtime.json
@@ -5,8 +6,6 @@ C:\Users\FLAVIN\Documents\MT\MaillotStore\bin\Debug\net8.0\MaillotStore.staticwe
 C:\Users\FLAVIN\Documents\MT\MaillotStore\bin\Debug\net8.0\MaillotStore.exe
 C:\Users\FLAVIN\Documents\MT\MaillotStore\bin\Debug\net8.0\MaillotStore.deps.json
 C:\Users\FLAVIN\Documents\MT\MaillotStore\bin\Debug\net8.0\MaillotStore.runtimeconfig.json
-C:\Users\FLAVIN\Documents\MT\MaillotStore\bin\Debug\net8.0\MaillotStore.dll
-C:\Users\FLAVIN\Documents\MT\MaillotStore\bin\Debug\net8.0\MaillotStore.pdb
 C:\Users\FLAVIN\Documents\MT\MaillotStore\bin\Debug\net8.0\Azure.Core.dll
 C:\Users\FLAVIN\Documents\MT\MaillotStore\bin\Debug\net8.0\Azure.Identity.dll
 C:\Users\FLAVIN\Documents\MT\MaillotStore\bin\Debug\net8.0\Humanizer.dll
@@ -131,6 +130,7 @@ C:\Users\FLAVIN\Documents\MT\MaillotStore\obj\Debug\net8.0\MaillotStore.Assembly
 C:\Users\FLAVIN\Documents\MT\MaillotStore\obj\Debug\net8.0\MaillotStore.AssemblyInfo.cs
 C:\Users\FLAVIN\Documents\MT\MaillotStore\obj\Debug\net8.0\MaillotStore.csproj.CoreCompileInputs.cache
 C:\Users\FLAVIN\Documents\MT\MaillotStore\obj\Debug\net8.0\MaillotStore.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\FLAVIN\Documents\MT\MaillotStore\obj\Debug\net8.0\MaillotStore.sourcelink.json
 C:\Users\FLAVIN\Documents\MT\MaillotStore\obj\Debug\net8.0\rjimswa.dswa.cache.json
 C:\Users\FLAVIN\Documents\MT\MaillotStore\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
 C:\Users\FLAVIN\Documents\MT\MaillotStore\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
@@ -147,5 +147,5 @@ C:\Users\FLAVIN\Documents\MT\MaillotStore\obj\Debug\net8.0\MaillotStore.dll
 C:\Users\FLAVIN\Documents\MT\MaillotStore\obj\Debug\net8.0\refint\MaillotStore.dll
 C:\Users\FLAVIN\Documents\MT\MaillotStore\obj\Debug\net8.0\MaillotStore.pdb
 C:\Users\FLAVIN\Documents\MT\MaillotStore\obj\Debug\net8.0\MaillotStore.genruntimeconfig.cache
+C:\Users\FLAVIN\Documents\MT\MaillotStore\bin\Debug\net8.0\MaillotStore.pdb
 C:\Users\FLAVIN\Documents\MT\MaillotStore\obj\Debug\net8.0\ref\MaillotStore.dll
-C:\Users\FLAVIN\Documents\MT\MaillotStore\obj\Debug\net8.0\MaillotStore.sourcelink.json

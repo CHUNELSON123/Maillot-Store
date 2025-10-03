@@ -1,1 +1,60 @@
-﻿
+﻿@page "/product/{ProductId:int}"
+@using MaillotStore.Models
+
+<PageTitle>@product?.Name</PageTitle>
+
+<div class="container my-5">
+    @if (product == null)
+    {
+        <div class="text-center">
+            <p><em>Loading product...</em></p>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="pd-gallery-container">
+                    <div class="pd-main-image mb-2">
+                        <img src="@product.ImageUrl" class="img-fluid" alt="Main image of @product.Name">
+                    </div>
+                    <div class="pd-thumbnail-images">
+                        <img src="@product.ImageUrl" class="img-thumbnail active" alt="Thumbnail 1">
+                        <img src="@product.ImageUrl" class="img-thumbnail" alt="Thumbnail 2">
+                        <img src="@product.ImageUrl" class="img-thumbnail" alt="Thumbnail 3">
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="pd-info-container">
+                    <h1 class="pd-name">@product.Name</h1>
+                    <h2 class="pd-price">FCFA @product.Price.ToString("N0")</h2>
+                    <p class="pd-season">@product.Season</p>
+                    <hr class="pd-divider" />
+                    <div class="pd-description">
+                        <p>@product.Description</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int ProductId { get; set; }
+    private Product? product;
+
+    protected override void OnInitialized()
+    {
+        var allProducts = new List<Product>
+        {
+            new Product { ProductId = 1, Name = "Manchester United", Season = "HOME (2025/2026)", Price = 60000, ImageUrl = "/Images/liv.jpeg", Description = "The official Manchester United home jersey for the 2025/2026 season." },
+            new Product { ProductId = 2, Name = "Real Madrid", Season = "AWAY (2025/2026)", Price = 65000, ImageUrl = "/Images/real.jpeg", Description = "Support Los Blancos on the road with the official 2025/2026 away jersey." },
+            new Product { ProductId = 3, Name = "Argentina", Season = "HOME (2024/2025)", Price = 55000, ImageUrl = "/Images/psg.jpeg", Description = "The iconic blue and white stripes of the Argentina national team." },
+            new Product { ProductId = 4, Name = "FC Barcelona", Season = "THIRD (2024/2025)", Price = 60000, ImageUrl = "/Images/Barcelona.jpeg", Description = "FC Barcelona's vibrant third kit for the 2024/2025 season." },
+        };
+        product = allProducts.FirstOrDefault(p => p.ProductId == ProductId);
+    }
+}

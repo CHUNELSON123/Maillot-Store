@@ -394,3 +394,72 @@ header {
     margin: 0;
     font-size: 0.9rem;
 }
+
+/* ============================================= */
+/* == Product Detail Page Layout == */
+/* ============================================= */
+
+/* --- Left Column: Image Gallery --- */
+.pd-main-image img {
+    width: 100%;
+    height: auto;
+    max-height: 700px;
+    object-fit: cover;
+    border-radius: 0.25rem;
+}
+
+.pd-thumbnail-images {
+    display: flex;
+    justify-content: space-between; /* Changed from flex-start */
+    gap: 10px; /* This will now define the minimum gap */
+}
+
+    .pd-thumbnail-images .img-thumbnail {
+        width: 32%; /* Each of the 3 images takes up about a third of the space */
+        height: auto; /* Height will adjust automatically */
+        aspect-ratio: 1 / 1; /* This ensures the thumbnails are always perfect squares */
+        object-fit: cover;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: border-color 0.3s ease;
+        padding: 0.2rem;
+    }
+        .pd-thumbnail-images .img-thumbnail:hover {
+            border-color: #adb5bd;
+        }
+
+        .pd-thumbnail-images .img-thumbnail.active {
+            border-color: #0d6efd;
+        }
+
+
+/* --- Right Column: Product Info --- */
+.pd-info-container .pd-name {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.pd-info-container .pd-season {
+    font-size: 1.1rem;
+    color: #a0a0a0;
+    margin-top: -0.5rem;
+}
+
+.pd-info-container .pd-price {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #0d6efd;
+    margin-top: 1rem;
+}
+
+.pd-info-container .pd-divider {
+    border-color: #2a2a2a;
+    margin: 1.5rem 0;
+}
+
+/* On mobile, add a space between the image and the text */
+@media (max-width: 991.98px) {
+    .pd-info-container {
+        margin-top: 2rem;
+    }
+}
