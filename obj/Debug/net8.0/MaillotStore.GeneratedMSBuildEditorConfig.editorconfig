@@ -196,6 +196,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xIb21lLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/FLAVIN/Documents/MT/MaillotStore/Components/Pages/ProductDetails.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xQcm9kdWN0RGV0YWlscy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/FLAVIN/Documents/MT/MaillotStore/Components/Pages/Shop.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xTaG9wLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/FLAVIN/Documents/MT/MaillotStore/Components/Routes.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xSb3V0ZXMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 

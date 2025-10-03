@@ -1,0 +1,119 @@
+﻿@page "/shop"
+@using MaillotStore.Models
+@using MaillotStore.Components.Account.Shared
+@rendermode InteractiveServer
+
+<PageTitle>Shop</PageTitle>
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2>Shop</h2>
+            <p>Browse our collection of authentic football jerseys.</p>
+        </div>
+        <div class="col-md-6 d-flex justify-content-end align-items-center">
+            <div class="me-3">
+                <label for="sort-by" class="form-label">Sort by:</label>
+                <select class="form-select" id="sort-by">
+                    <option selected>Default</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                </select>
+            </div>
+            <div>
+                <label for="filter-by" class="form-label">Filter by:</label>
+                <select class="form-select" id="filter-by">
+                    <option selected>All</option>
+                    <option value="men">Men</option>
+                    <option value="women">Women</option>
+                    <option value="kids">Kids</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    @* --- Product Grid --- *@
+    @if (pagedProducts is not null)
+    {
+        <div class="row g-4">
+            @foreach (var product in pagedProducts)
+            {
+                <div class="col-6 col-lg-4">
+                    <ProductCard Product="product" />
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p>Loading products...</p>
+    }
+
+    @* --- Pagination Controls --- *@
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center mt-4">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link" href="javascript:void(0)" @onclick="() => ChangePage(currentPage - 1)">Previous</a>
+            </li>
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                var pageNumber = i;
+                <li class="page-item @(currentPage == pageNumber ? "active" : "")">
+                    <a class="page-link" href="javascript:void(0)" @onclick="() => ChangePage(pageNumber)">@pageNumber</a>
+                </li>
+            }
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <a class="page-link" href="javascript:void(0)" @onclick="() => ChangePage(currentPage + 1)">Next</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+
+@code {
+    private List<Product>? allProducts;
+    private List<Product>? pagedProducts;
+    private int currentPage = 1;
+    private int pageSize = 6; // Show 6 products per page
+    private int totalPages;
+
+    protected override void OnInitialized()
+    {
+        // Later, we will fetch this data from a database.
+        allProducts = new List<Product>
+        {
+            new Product { ProductId = 1, Name = "Manchester United", Season = "HOME (2025/2026)", Price = 60000, ImageUrl = "/Images/liv.jpeg" },
+            new Product { ProductId = 2, Name = "Real Madrid", Season = "AWAY (2025/2026)", Price = 65000, ImageUrl = "/Images/real.jpeg" },
+            new Product { ProductId = 3, Name = "Argentina", Season = "HOME (2024/2025)", Price = 55000, ImageUrl = "/Images/psg.jpeg" },
+            new Product { ProductId = 4, Name = "FC Barcelona", Season = "THIRD (2024/2025)", Price = 60000, ImageUrl = "/Images/Barcelona.jpeg" },
+            new Product { ProductId = 5, Name = "Liverpool FC", Season = "HOME (2025/2026)", Price = 62000, ImageUrl = "/Images/liv.jpeg" },
+            new Product { ProductId = 6, Name = "Paris Saint-Germain", Season = "AWAY (2025/2026)", Price = 63000, ImageUrl = "/Images/psg.jpeg" },
+            new Product { ProductId = 7, Name = "Bayern Munich", Season = "HOME (2024/2025)", Price = 61000, ImageUrl = "/Images/real.jpeg" },
+            new Product { ProductId = 8, Name = "Juventus", Season = "THIRD (2024/2025)", Price = 59000, ImageUrl = "/Images/Barcelona.jpeg" },
+            // Add more products to test pagination
+             new Product { ProductId = 9, Name = "Chelsea", Season = "HOME (2025/2026)", Price = 60000, ImageUrl = "/Images/liv.jpeg" },
+            new Product { ProductId = 10, Name = "Atletico Madrid", Season = "AWAY (2025/2026)", Price = 65000, ImageUrl = "/Images/real.jpeg" },
+            new Product { ProductId = 11, Name = "Brazil", Season = "HOME (2024/2025)", Price = 55000, ImageUrl = "/Images/psg.jpeg" },
+            new Product { ProductId = 12, Name = "Manchester City", Season = "THIRD (2024/2025)", Price = 60000, ImageUrl = "/Images/Barcelona.jpeg" },
+
+        };
+
+        totalPages = (int)Math.Ceiling(allProducts.Count / (double)pageSize);
+        UpdatePagedProducts();
+    }
+
+    private void ChangePage(int pageNumber)
+    {
+        if (pageNumber < 1 || pageNumber > totalPages)
+        {
+            return;
+        }
+        currentPage = pageNumber;
+        UpdatePagedProducts();
+    }
+
+    private void UpdatePagedProducts()
+    {
+        pagedProducts = allProducts.Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
+    }
+}
