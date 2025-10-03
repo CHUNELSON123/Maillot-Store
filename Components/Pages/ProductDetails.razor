@@ -1,5 +1,6 @@
 ﻿@page "/product/{ProductId:int}"
 @using MaillotStore.Models
+@using MaillotStore.Components.Account.Shared
 
 <PageTitle>@product?.Name</PageTitle>
 
@@ -35,16 +36,83 @@
                     <div class="pd-description">
                         <p>@product.Description</p>
                     </div>
+                    <hr class="pd-divider" />
+
+                    @* --- CUSTOMIZATION INFO TEXT --- *@
+                    <div class="customization-info text-muted mb-4">
+                        <h2 style="color: white;">Customization Info</h2>
+                    </div>
+
+                    @* --- CUSTOMIZATION: NAME & NUMBER --- *@
+                    <div class="row mb-3">
+                        <div class="col-md-8 mb-3 mb-md-0">
+                            <input type="text" class="form-control form-control-dark-uniform" placeholder="Player Name" @bind="customName" />
+                        </div>
+                        <div class="col-md-4">
+                            <input type="number" class="form-control form-control-dark-uniform" placeholder="Number" @bind="customNumber" />
+                        </div>
+                    </div>
+
+                    @* --- CUSTOMIZATION: SIZE & QUANTITY --- *@
+                    <div class="row mb-3">
+                        <div class="col-md-8 mb-3 mb-md-0">
+                            <select class="form-select form-control-dark-uniform" @bind="selectedSize">
+                                <option value="" disabled selected>Size</option>
+                                @foreach (var size in availableSizes)
+                                {
+                                    <option value="@size">@size</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="number" class="form-control form-control-dark-uniform" placeholder="Quantity" @bind="quantity" />
+                        </div>
+                    </div>
+
+                    @* --- ACTION BUTTONS --- *@
+                    <div class="d-grid gap-3 mt-5">
+                        <button class="btn btn-lg btn-dark-uniform" @onclick="AddToCart">
+                            <i class="fas fa-shopping-cart me-2"></i> Add to Cart
+                        </button>
+                        <button class="btn btn-lg btn-dark-uniform" @onclick="OrderNow">
+                            Order Now
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
+
+        @* --- YOU MAY ALSO LIKE SECTION --- *@
+        <hr class="my-5" />
+        <section class="related-products">
+            <h2 class="mb-4">You may also like</h2>
+            @if (relatedProducts is not null)
+            {
+                <div class="row g-4">
+                    @foreach (var relatedProduct in relatedProducts)
+                    {
+                        <div class="col-6 col-lg-4">
+                            <ProductCard Product="relatedProduct" />
+                        </div>
+                    }
+                </div>
+            }
+        </section>
     }
 </div>
 
 @code {
     [Parameter]
     public int ProductId { get; set; }
+
     private Product? product;
+    private List<Product>? relatedProducts;
+    private string customName = string.Empty;
+    private int? customNumber;
+    private string? selectedSize;
+    private int quantity = 1;
+
+    private List<string> availableSizes = new() { "S", "M", "L", "XL", "XXL" };
 
     protected override void OnInitialized()
     {
@@ -54,7 +122,22 @@
             new Product { ProductId = 2, Name = "Real Madrid", Season = "AWAY (2025/2026)", Price = 65000, ImageUrl = "/Images/real.jpeg", Description = "Support Los Blancos on the road with the official 2025/2026 away jersey." },
             new Product { ProductId = 3, Name = "Argentina", Season = "HOME (2024/2025)", Price = 55000, ImageUrl = "/Images/psg.jpeg", Description = "The iconic blue and white stripes of the Argentina national team." },
             new Product { ProductId = 4, Name = "FC Barcelona", Season = "THIRD (2024/2025)", Price = 60000, ImageUrl = "/Images/Barcelona.jpeg", Description = "FC Barcelona's vibrant third kit for the 2024/2025 season." },
+            new Product { ProductId = 5, Name = "Liverpool FC", Season = "HOME (2025/2026)", Price = 62000, ImageUrl = "/Images/liv.jpeg" },
+            new Product { ProductId = 6, Name = "Paris Saint-Germain", Season = "AWAY (2025/2026)", Price = 63000, ImageUrl = "/Images/psg.jpeg" },
+            new Product { ProductId = 7, Name = "Bayern Munich", Season = "HOME (2024/2025)", Price = 61000, ImageUrl = "/Images/real.jpeg" },
+            new Product { ProductId = 8, Name = "Juventus", Season = "THIRD (2024/2025)", Price = 59000, ImageUrl = "/Images/Barcelona.jpeg" },
+            new Product { ProductId = 9, Name = "Chelsea", Season = "HOME (2025/2026)", Price = 60000, ImageUrl = "/Images/liv.jpeg" },
+            new Product { ProductId = 10, Name = "Atletico Madrid", Season = "AWAY (2025/2026)", Price = 65000, ImageUrl = "/Images/real.jpeg" },
+            new Product { ProductId = 11, Name = "Brazil", Season = "HOME (2024/2025)", Price = 55000, ImageUrl = "/Images/psg.jpeg" },
+            new Product { ProductId = 12, Name = "Manchester City", Season = "THIRD (2024/2025)", Price = 60000, ImageUrl = "/Images/Barcelona.jpeg" },
         };
+
         product = allProducts.FirstOrDefault(p => p.ProductId == ProductId);
+
+        // Get some random related products, excluding the current one
+        relatedProducts = allProducts.Where(p => p.ProductId != ProductId).OrderBy(x => Guid.NewGuid()).Take(3).ToList();
     }
+
+    private void AddToCart() => Console.WriteLine($"Added to cart: {product?.Name}, Size: {selectedSize}, Quantity: {quantity}, Custom Name: {customName}, Custom Number: {customNumber}");
+    private void OrderNow() => Console.WriteLine($"Ordering now: {product?.Name}, Size: {selectedSize}, Quantity: {quantity}, Custom Name: {customName}, Custom Number: {customNumber}");
 }

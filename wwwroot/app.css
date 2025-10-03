@@ -463,3 +463,61 @@ header {
         margin-top: 2rem;
     }
 }
+
+/* --- UNIFORM DARK CONTROLS FOR PRODUCT PAGE --- */
+
+/* Base style for all inputs, selects, and buttons */
+.form-control-dark-uniform,
+.btn-dark-uniform,
+.btn-dark-outline-uniform {
+    background-color: #000 !important;
+    color: #fff !important;
+    border: 1px solid #fff !important;
+    height: 50px; /* Ensures same height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+}
+
+/* Specifics for text inputs and select */
+.form-control-dark-uniform,
+.form-select.form-control-dark-uniform {
+    justify-content: flex-start; /* Align text to the left */
+}
+
+    /* Placeholder text color */
+    .form-control-dark-uniform::placeholder {
+        color: #ccc;
+        opacity: 1;
+    }
+
+/* Style for the dropdown arrow */
+.form-select.form-control-dark-uniform {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right .75rem center;
+    background-size: 16px 12px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* Hover effect for buttons */
+.btn-dark-uniform:hover,
+.btn-dark-outline-uniform:hover {
+    background-color: #222 !important;
+}
+
+/* Remove focus outline */
+.form-control-dark-uniform:focus,
+.btn-dark-uniform:focus,
+.btn-dark-outline-uniform:focus {
+    box-shadow: none;
+}
+
+/* Ensure quantity text input is also centered */
+.input-group .form-control-dark-uniform {
+    text-align: center;
+}
