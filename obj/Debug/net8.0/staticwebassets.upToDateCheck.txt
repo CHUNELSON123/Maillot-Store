@@ -10,3 +10,4 @@ wwwroot\Images\liv.jpeg
 wwwroot\Images\maillotstore-logo.jpeg
 wwwroot\Images\psg.jpeg
 wwwroot\Images\real.jpeg
+wwwroot\css\order.css
