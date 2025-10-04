@@ -1,4 +1,4 @@
-﻿namespace MaillotStore.Models
+﻿ namespace MaillotStore.Models
 {
     public class OrderItem
     {
