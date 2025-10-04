@@ -1,0 +1,50 @@
+﻿@page "/admin/influencers"
+@using MaillotStore.Components.Layout
+@layout AdminLayout
+
+<PageTitle>Influencers</PageTitle>
+
+<div class="influencer-container">
+    <div class="influencer-header">
+        <h1>Influencers</h1>
+        <h2>Influencer List</h2>
+    </div>
+
+    <div class="influencer-table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>S/N</th>
+                    <th>Influencer Name</th>
+                    <th>Phone Number</th>
+                    <th>Sales</th>
+                    <th>Commission Earned</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>CHU NELSON</td>
+                    <td>6 71 00 73 13</td>
+                    <td>5</td>
+                    <td></td>
+                    <td class="action-buttons">
+                        <button class="view-btn">View</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        <button class="active">1</button>
+        <button>2</button>
+        <button>3</button>
+        <button>4</button>
+        <button>5</button>
+        <button>6</button>
+        <button>7</button>
+        <button>&raquo;</button>
+    </div>
+</div>

@@ -1,0 +1,54 @@
+﻿@page "/admin/commissions"
+@layout Components.Layout.AdminLayout
+
+<PageTitle>Commissions</PageTitle>
+
+<div class="commissions-container">
+    <h1 class="commissions-title">Commissions</h1>
+    <h2 class="commission-list-title">Commission List</h2>
+
+    <div class="table-responsive">
+        <table class="table commissions-table">
+            <thead>
+                <tr>
+                    <th>S/N</th>
+                    <th>Date and Time</th>
+                    <th>Influencer</th>
+                    <th>Product</th>
+                    <th>Amount</th>
+                    <th>Commission</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>19/09/2025 13:51</td>
+                    <td>Beh Chu</td>
+                    <td>Barca Jersey</td>
+                    <td>35,000</td>
+                    <td>5,000</td>
+                    <td><button class="btn btn-mark-paid">Mark as Paid</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        <button class="active">1</button>
+        <button>2</button>
+        <button>3</button>
+        <button>4</button>
+        <button>5</button>
+        <button>6</button>
+        <button>7</button>
+        <button>&raquo;</button>
+    </div>
+
+    <div class="summary-section">
+        <h2 class="summary-title">Summary:</h2>
+        <p><strong>Total Commission Earned (All Influencer):</strong> 67, 500 XAF</p>
+        <p><strong>Total Paid:</strong> 7, 500 XAF</p>
+        <p><strong>Balance Remaining:</strong> 6, 000 XAF</p>
+    </div>
+</div>

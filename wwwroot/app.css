@@ -57,7 +57,7 @@ header {
     background-color: #fff;
     border: 1px solid #ced4da;
     color: #212529;
-    border-radius: 20px
+    border-radius: 50px
 }
 
     .search-bar::placeholder {

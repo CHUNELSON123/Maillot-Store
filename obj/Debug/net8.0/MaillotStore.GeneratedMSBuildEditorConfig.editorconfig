@@ -200,6 +200,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxBZGRQcm9kdWN0LnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/FLAVIN/Documents/MT/MaillotStore/Components/Pages/Admin/Commissions.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxDb21taXNzaW9ucy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/FLAVIN/Documents/MT/MaillotStore/Components/Pages/Admin/Dashboard.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxEYXNoYm9hcmQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
@@ -208,12 +212,24 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxFZGl0UHJvZHVjdC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/FLAVIN/Documents/MT/MaillotStore/Components/Pages/Admin/Influencers.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxJbmZsdWVuY2Vycy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/FLAVIN/Documents/MT/MaillotStore/Components/Pages/Admin/Orders.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxPcmRlcnMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/FLAVIN/Documents/MT/MaillotStore/Components/Pages/Admin/Products.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxQcm9kdWN0cy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/FLAVIN/Documents/MT/MaillotStore/Components/Pages/Admin/ViewInfluencer.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxWaWV3SW5mbHVlbmNlci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/FLAVIN/Documents/MT/MaillotStore/Components/Pages/Admin/ViewOrder.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxWaWV3T3JkZXIucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/FLAVIN/Documents/MT/MaillotStore/Components/Pages/Auth.razor]

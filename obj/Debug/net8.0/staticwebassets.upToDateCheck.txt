@@ -3,11 +3,15 @@ wwwroot\bootstrap\bootstrap.min.css
 wwwroot\bootstrap\bootstrap.min.css.map
 wwwroot\css\add-product.css
 wwwroot\css\admin.css
+wwwroot\css\commissions.css
+wwwroot\css\influencers.css
+wwwroot\css\order.css
 wwwroot\css\Products.css
+wwwroot\css\view-order.css
+wwwroot\css\viewinfluencer.css
 wwwroot\favicon.png
 wwwroot\Images\Barcelona.jpeg
 wwwroot\Images\liv.jpeg
 wwwroot\Images\maillotstore-logo.jpeg
 wwwroot\Images\psg.jpeg
 wwwroot\Images\real.jpeg
-wwwroot\css\order.css
