@@ -1,84 +1,190 @@
 ﻿@page "/admin/add-product"
 @using MaillotStore.Components.Layout
+@using MaillotStore.Models
+@using MaillotStore.Data
+@using Microsoft.AspNetCore.Hosting
+@using Microsoft.Extensions.Logging
 @layout AdminLayout
+@inject ApplicationDbContext DbContext
+@inject NavigationManager NavigationManager
+@inject IWebHostEnvironment Environment
+@inject ILogger<AddProduct> Logger
 
 <PageTitle>Add Product</PageTitle>
 
 <div class="add-product-container">
     <div class="add-product-header">
         <h1>Add New Product</h1>
-        <button class="back-btn">Back</button>
+        <button class="back-btn" @onclick='() => NavigationManager.NavigateTo("/admin/products")'>Back</button>
     </div>
 
     <div class="add-product-form-body">
-        <form>
+        <EditForm Model="@productViewModel" OnValidSubmit="HandleValidSubmit" enctype="multipart/form-data">
+            <DataAnnotationsValidator />
+
             <div class="form-group">
                 <label for="productName">Product Name:</label>
-                <input type="text" id="productName" class="form-control-dark">
+                <InputText id="productName" class="form-control-dark" @bind-Value="productViewModel.Name" />
             </div>
 
             <div class="form-group">
                 <label for="productPrice">Price:</label>
-                <input type="text" id="productPrice" class="form-control-dark">
+                <InputNumber id="productPrice" class="form-control-dark" @bind-Value="productViewModel.Price" />
             </div>
 
             <div class="form-group">
                 <label for="jerseySeason">Jersey Season:</label>
                 <div class="season-inputs">
-                    <select id="jerseySeasonType" class="form-control-dark">
-                        <option>HOME</option>
-                        <option>Away</option>
-                        <option>Third</option>
-                    </select>
-                    <select id="jerseySeasonYear" class="form-control-dark">
-                        <option>2025/2026</option>
-                        <option>2024/2025</option>
-                        <option>2023/2024</option>
-                    </select>
+                    <InputSelect class="form-control-dark" @bind-Value="productViewModel.SeasonType">
+                        <option value="">Select Type</option>
+                        <option value="HOME">HOME</option>
+                        <option value="AWAY">AWAY</option>
+                        <option value="THIRD">THIRD</option>
+                    </InputSelect>
+                    <InputSelect class="form-control-dark" @bind-Value="productViewModel.SeasonYear">
+                        <option value="">Select Year</option>
+                        @foreach (var year in SeasonYears)
+                        {
+                            <option value="@year">@year</option>
+                        }
+                    </InputSelect>
                 </div>
             </div>
 
             <div class="form-group">
                 <label for="stockQuantity">Stock Quantity:</label>
-                <input type="number" id="stockQuantity" class="form-control-dark">
+                <InputNumber id="stockQuantity" class="form-control-dark" @bind-Value="productViewModel.Stock" />
             </div>
 
             <div class="form-group">
                 <label for="productDescription">Description:</label>
-                <textarea id="productDescription" class="form-control-dark" rows="5"></textarea>
+                <InputTextArea id="productDescription" class="form-control-dark" rows="5" @bind-Value="productViewModel.Description" />
+            </div>
+ 
+            <div class="form-group">
+                <label>Image URLs (Optional):</label>
+                <div class="input-row">
+                    <InputText placeholder="Image URL 1" class="form-control-dark" @bind-Value="productViewModel.ImageUrl1" />
+                    <InputText placeholder="Image URL 2" class="form-control-dark" @bind-Value="productViewModel.ImageUrl2" />
+                    <InputText placeholder="Image URL 3" class="form-control-dark" @bind-Value="productViewModel.ImageUrl3" />
+                </div>
             </div>
 
+            @* --- Image File Uploads (now in a single row) --- *@
             <div class="form-group">
-                <label>Image Upload:</label>
-                <div class="image-upload-container">
-                    <input type="file" id="imageUpload1" class="form-control-file">
-                    <input type="file" id="imageUpload2" class="form-control-file">
-                    <input type="file" id="imageUpload3" class="form-control-file">
+                <label>Or Upload Images From PC (Max 3):</label>
+                <div class="input-row">
+                    <InputFile OnChange="@(e => LoadFile(e, 0))" class="form-control-file" />
+                    <InputFile OnChange="@(e => LoadFile(e, 1))" class="form-control-file" />
+                    <InputFile OnChange="@(e => LoadFile(e, 2))" class="form-control-file" />
                 </div>
             </div>
 
             <div class="form-group featured-group">
                 <label>Featured:</label>
                 <div class="featured-options">
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="featured" id="featuredYes">
-                        <label class="form-check-label" for="featuredYes">
-                            Yes
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="featured" id="featuredNo" checked>
-                        <label class="form-check-label" for="featuredNo">
-                            No
-                        </label>
-                    </div>
+                    <InputRadioGroup @bind-Value="productViewModel.IsFeatured">
+                        <div class="form-check">
+                            <InputRadio class="form-check-input" id="featuredYes" Value="true" />
+                            <label class="form-check-label" for="featuredYes">Yes</label>
+                        </div>
+                        <div class="form-check">
+                            <InputRadio class="form-check-input" id="featuredNo" Value="false" />
+                            <label class="form-check-label" for="featuredNo">No</label>
+                        </div>
+                    </InputRadioGroup>
                 </div>
             </div>
 
             <div class="form-actions">
-                <button type="submit" class="btn-saved">Saved</button>
-                <button type="button" class="btn-cancel">Cancel</button>
+                <button type="submit" class="btn-saved">Save</button>
+                <button type="button" class="btn-cancel" @onclick='() => NavigationManager.NavigateTo("/admin/products")'>Cancel</button>
             </div>
-        </form>
+        </EditForm>
     </div>
 </div>
+
+@code {
+    private ProductViewModel productViewModel = new();
+    private List<IBrowserFile> loadedFiles = new();
+    private List<string> SeasonYears { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        int startYear = 2014;
+        int currentYear = DateTime.Now.Year;
+        for (int year = startYear; year <= currentYear; year++)
+        {
+            SeasonYears.Add($"{year}/{year + 1}");
+        }
+        SeasonYears.Reverse();
+    }
+
+    private void LoadFile(InputFileChangeEventArgs e, int index)
+    {
+        while (loadedFiles.Count <= index)
+        {
+            loadedFiles.Add(null);
+        }
+        loadedFiles[index] = e.File;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        var newProduct = new Product
+        {
+            Name = productViewModel.Name,
+            Price = productViewModel.Price,
+            Stock = productViewModel.Stock,
+            Description = productViewModel.Description,
+            IsFeatured = productViewModel.IsFeatured,
+            Season = $"{productViewModel.SeasonType} ({productViewModel.SeasonYear})"
+        };
+
+        var uploadedImageUrls = new List<string>();
+        foreach (var file in loadedFiles.Where(f => f != null))
+        {
+            if (file.Size > 1024 * 1024 * 5) // 5 MB limit
+            {
+                Logger.LogWarning("File {FileName} is too large.", file.Name);
+                continue;
+            }
+
+            try
+            {
+                var path = Path.Combine(Environment.WebRootPath, "Images", "products", file.Name);
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+                await using FileStream fs = new(path, FileMode.Create);
+                await file.OpenReadStream(file.Size).CopyToAsync(fs);
+                uploadedImageUrls.Add($"/Images/products/{file.Name}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error uploading file {FileName}.", file.Name);
+            }
+        }
+
+        newProduct.ImageUrl = uploadedImageUrls.Count > 0 ? uploadedImageUrls[0] : productViewModel.ImageUrl1;
+        newProduct.ImageUrl2 = uploadedImageUrls.Count > 1 ? uploadedImageUrls[1] : productViewModel.ImageUrl2;
+        newProduct.ImageUrl3 = uploadedImageUrls.Count > 2 ? uploadedImageUrls[2] : productViewModel.ImageUrl3;
+
+        DbContext.Products.Add(newProduct);
+        await DbContext.SaveChangesAsync();
+        NavigationManager.NavigateTo("/admin/products");
+    }
+
+    public class ProductViewModel
+    {
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public decimal Price { get; set; }
+        public int Stock { get; set; }
+        public string? SeasonType { get; set; }
+        public string? SeasonYear { get; set; }
+        public bool IsFeatured { get; set; }
+        public string? ImageUrl1 { get; set; }
+        public string? ImageUrl2 { get; set; }
+        public string? ImageUrl3 { get; set; }
+    }
+}

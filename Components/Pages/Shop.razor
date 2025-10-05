@@ -1,7 +1,10 @@
 ﻿@page "/shop"
 @using MaillotStore.Models
 @using MaillotStore.Components.Account.Shared
+@using MaillotStore.Data
+@using Microsoft.EntityFrameworkCore
 @rendermode InteractiveServer
+@inject ApplicationDbContext DbContext
 
 <PageTitle>Shop</PageTitle>
 
@@ -69,37 +72,23 @@
     </nav>
 </div>
 
-
 @code {
     private List<Product>? allProducts;
     private List<Product>? pagedProducts;
     private int currentPage = 1;
-    private int pageSize = 6; // Show 6 products per page
+    private int pageSize = 12; // Show 12 products per page
     private int totalPages;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Later, we will fetch this data from a database.
-        allProducts = new List<Product>
+        // Fetch all products from the database.
+        allProducts = await DbContext.Products.ToListAsync();
+
+        if (allProducts is not null)
         {
-            new Product { ProductId = 1, Name = "Manchester United", Season = "HOME (2025/2026)", Price = 60000, ImageUrl = "/Images/liv.jpeg" },
-            new Product { ProductId = 2, Name = "Real Madrid", Season = "AWAY (2025/2026)", Price = 65000, ImageUrl = "/Images/real.jpeg" },
-            new Product { ProductId = 3, Name = "Argentina", Season = "HOME (2024/2025)", Price = 55000, ImageUrl = "/Images/psg.jpeg" },
-            new Product { ProductId = 4, Name = "FC Barcelona", Season = "THIRD (2024/2025)", Price = 60000, ImageUrl = "/Images/Barcelona.jpeg" },
-            new Product { ProductId = 5, Name = "Liverpool FC", Season = "HOME (2025/2026)", Price = 62000, ImageUrl = "/Images/liv.jpeg" },
-            new Product { ProductId = 6, Name = "Paris Saint-Germain", Season = "AWAY (2025/2026)", Price = 63000, ImageUrl = "/Images/psg.jpeg" },
-            new Product { ProductId = 7, Name = "Bayern Munich", Season = "HOME (2024/2025)", Price = 61000, ImageUrl = "/Images/real.jpeg" },
-            new Product { ProductId = 8, Name = "Juventus", Season = "THIRD (2024/2025)", Price = 59000, ImageUrl = "/Images/Barcelona.jpeg" },
-            // Add more products to test pagination
-             new Product { ProductId = 9, Name = "Chelsea", Season = "HOME (2025/2026)", Price = 60000, ImageUrl = "/Images/liv.jpeg" },
-            new Product { ProductId = 10, Name = "Atletico Madrid", Season = "AWAY (2025/2026)", Price = 65000, ImageUrl = "/Images/real.jpeg" },
-            new Product { ProductId = 11, Name = "Brazil", Season = "HOME (2024/2025)", Price = 55000, ImageUrl = "/Images/psg.jpeg" },
-            new Product { ProductId = 12, Name = "Manchester City", Season = "THIRD (2024/2025)", Price = 60000, ImageUrl = "/Images/Barcelona.jpeg" },
-
-        };
-
-        totalPages = (int)Math.Ceiling(allProducts.Count / (double)pageSize);
-        UpdatePagedProducts();
+            totalPages = (int)Math.Ceiling(allProducts.Count / (double)pageSize);
+            UpdatePagedProducts();
+        }
     }
 
     private void ChangePage(int pageNumber)
@@ -114,6 +103,9 @@
 
     private void UpdatePagedProducts()
     {
-        pagedProducts = allProducts.Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
+        if (allProducts is not null)
+        {
+            pagedProducts = allProducts.Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
+        }
     }
 }

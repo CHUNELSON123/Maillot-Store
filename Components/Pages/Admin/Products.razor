@@ -1,18 +1,20 @@
 ﻿@page "/admin/products"
 @using MaillotStore.Components.Layout
+@using MaillotStore.Models
+@using MaillotStore.Data
+@using Microsoft.EntityFrameworkCore
 @layout AdminLayout
+@inject ApplicationDbContext DbContext
+@inject NavigationManager NavigationManager
 
 <PageTitle>Products</PageTitle>
 
 <div class="product-container">
     <div class="product-header">
         <h1>Product List</h1>
-        <a href="/admin/add-product" >
-            <button class="add-btn">
-                <span class="plus-icon">+</span>
-            </button>
-        </a>
-       
+        <button class="add-btn" @onclick='() => NavigationManager.NavigateTo("/admin/add-product")'>
+            <span class="plus-icon">+</span>
+        </button>
     </div>
 
     <div class="product-table-container">
@@ -27,58 +29,44 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>1</td>
-                    <td>Atletico de madrid hpme jersey...</td>
-                    <td>FCFA 15,000</td>
-                    <td>45</td>
-                    <td class="action-buttons">
-                        <button class="edit-btn">Edit</button>
-                        <button class="delete-btn">Delete</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>2</td>
-                    <td>Real Madrid Home Jersey 24/25</td>
-                    <td>FCFA 15,000</td>
-                    <td>60</td>
-                    <td class="action-buttons">
-                        <button class="edit-btn">Edit</button>
-                        <button class="delete-btn">Delete</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>3</td>
-                    <td>FC Barcelona Away Jersey 24/25</td>
-                    <td>FCFA 15,000</td>
-                    <td>32</td>
-                    <td class="action-buttons">
-                        <button class="edit-btn">Edit</button>
-                        <button class="delete-btn">Delete</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>4</td>
-                    <td>Manchester United Third Kit</td>
-                    <td>FCFA 16,000</td>
-                    <td>25</td>
-                    <td class="action-buttons">
-                        <button class="edit-btn">Edit</button>
-                        <button class="delete-btn">Delete</button>
-                    </td>
-                </tr>
+                @if (products is not null)
+                {
+                    @foreach (var (product, index) in products.Select((p, i) => (p, i + 1)))
+                    {
+                        <tr>
+                            <td>@index</td>
+                            <td>@product.Name</td>
+                            <td>@product.Price.ToString("C")</td>
+                            <td>@product.Stock</td>
+                            <td class="action-buttons">
+                                <button class="edit-btn" @onclick='() => NavigationManager.NavigateTo($"/admin/edit-product/{product.ProductId}")'>Edit</button>
+                                <button class="delete-btn" @onclick="() => DeleteProduct(product.ProductId)">Delete</button>
+                            </td>
+                        </tr>
+                    }
+                }
             </tbody>
         </table>
     </div>
-
-    <div class="pagination">
-        <button class="active">1</button>
-        <button>2</button>
-        <button>3</button>
-        <button>4</button>
-        <button>5</button>
-        <button>6</button>
-        <button>7</button>
-        <button>&raquo;</button>
-    </div>
 </div>
+
+@code {
+    private List<Product>? products;
+
+    protected override async Task OnInitializedAsync()
+    {
+        products = await DbContext.Products.ToListAsync();
+    }
+
+    private async Task DeleteProduct(int productId)
+    {
+        var product = await DbContext.Products.FindAsync(productId);
+        if (product != null)
+        {
+            DbContext.Products.Remove(product);
+            await DbContext.SaveChangesAsync();
+            products.Remove(product);
+            StateHasChanged();
+        }
+    }
+}

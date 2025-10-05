@@ -13,5 +13,8 @@ wwwroot\favicon.png
 wwwroot\Images\Barcelona.jpeg
 wwwroot\Images\liv.jpeg
 wwwroot\Images\maillotstore-logo.jpeg
+wwwroot\Images\products\Barcelona-Home-Retro.jpg
+wwwroot\Images\products\Barcelona.jpeg
+wwwroot\Images\products\psg.jpeg
 wwwroot\Images\psg.jpeg
 wwwroot\Images\real.jpeg

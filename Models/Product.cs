@@ -7,8 +7,11 @@
         public string? Description { get; set; }
         public decimal Price { get; set; }
         public string? ImageUrl { get; set; }
+        public string? ImageUrl2 { get; set; } // New field
+        public string? ImageUrl3 { get; set; } // New field
         public int Stock { get; set; }
-        public string? Season { get; set; } // To store values like "HOME(2025/2026)"
-        public string? Sizes { get; set; } // To store available sizes, e.g., "S, M, L, XL"
+        public string? Season { get; set; } // This will store the combined season, e.g., "HOME (2025/2026)"
+        public string? Sizes { get; set; }
+        public bool IsFeatured { get; set; }
     }
 }
