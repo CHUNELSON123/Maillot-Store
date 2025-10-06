@@ -1,84 +1,240 @@
-﻿@page "/admin/edit-product"
+﻿@page "/admin/edit-product/{ProductId:int}"
 @using MaillotStore.Components.Layout
+@using MaillotStore.Models
+@using MaillotStore.Data
+@using Microsoft.AspNetCore.Hosting
+@using Microsoft.Extensions.Logging
+@using Microsoft.EntityFrameworkCore
+@using System.ComponentModel.DataAnnotations
+@using MaillotStore.Models.ViewModels
+@using Microsoft.AspNetCore.Components.Forms  
 @layout AdminLayout
+@inject ApplicationDbContext DbContext
+@inject NavigationManager NavigationManager
+@inject IWebHostEnvironment Environment
+@inject ILogger<EditProduct> Logger
 
-<PageTitle>Add Product</PageTitle>
+<PageTitle>Edit Product</PageTitle>
 
 <div class="add-product-container">
     <div class="add-product-header">
         <h1>Edit Product</h1>
-        <button class="back-btn">Back</button>
+        <button class="back-btn" @onclick='() => NavigationManager.NavigateTo("/admin/products")'>Back</button>
     </div>
 
     <div class="add-product-form-body">
-        <form>
-            <div class="form-group">
-                <label for="productName">Product Name:</label>
-                <input type="text" id="productName" class="form-control-dark">
-            </div>
+        @if (productViewModel == null)
+        {
+            <p><em>Loading product...</em></p>
+        }
+        else
+        {
+            <EditForm Model="@productViewModel" OnValidSubmit="HandleUpdateSubmit" enctype="multipart/form-data">
+                <DataAnnotationsValidator />
 
-            <div class="form-group">
-                <label for="productPrice">Price:</label>
-                <input type="text" id="productPrice" class="form-control-dark">
-            </div>
-
-            <div class="form-group">
-                <label for="jerseySeason">Jersey Season:</label>
-                <div class="season-inputs">
-                    <select id="jerseySeasonType" class="form-control-dark">
-                        <option>HOME</option>
-                        <option>Away</option>
-                        <option>Third</option>
-                    </select>
-                    <select id="jerseySeasonYear" class="form-control-dark">
-                        <option>2025/2026</option>
-                        <option>2024/2025</option>
-                        <option>2023/2024</option>
-                    </select>
+                <div class="form-group">
+                    <label for="productName">Product Name:</label>
+                    <InputText id="productName" class="form-control-dark" @bind-Value="productViewModel.Name" />
+                    <ValidationMessage For="@(() => productViewModel.Name)" />
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label for="stockQuantity">Stock Quantity:</label>
-                <input type="number" id="stockQuantity" class="form-control-dark">
-            </div>
-
-            <div class="form-group">
-                <label for="productDescription">Description:</label>
-                <textarea id="productDescription" class="form-control-dark" rows="5"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label>Image Upload:</label>
-                <div class="image-upload-container">
-                    <input type="file" id="imageUpload1" class="form-control-file">
-                    <input type="file" id="imageUpload2" class="form-control-file">
-                    <input type="file" id="imageUpload3" class="form-control-file">
+                <div class="form-group">
+                    <label for="productPrice">Price:</label>
+                    <InputNumber id="productPrice" class="form-control-dark" @bind-Value="productViewModel.Price" />
+                    <ValidationMessage For="@(() => productViewModel.Price)" />
                 </div>
-            </div>
 
-            <div class="form-group featured-group">
-                <label>Featured:</label>
-                <div class="featured-options">
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="featured" id="featuredYes">
-                        <label class="form-check-label" for="featuredYes">
-                            Yes
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="featured" id="featuredNo" checked>
-                        <label class="form-check-label" for="featuredNo">
-                            No
-                        </label>
+                <div class="form-group">
+                    <label for="productCategory">Category:</label>
+                    <InputSelect id="productCategory" class="form-control-dark" @bind-Value="productViewModel.Category">
+                        <option value="">Select Category</option>
+                        <option value="Football">Football</option>
+                        <option value="Basketball">Basketball</option>
+                        <option value="NFL">NFL</option>
+                    </InputSelect>
+                    <ValidationMessage For="@(() => productViewModel.Category)" />
+                </div>
+
+                <div class="form-group">
+                    <label for="jerseySeason">Jersey Season:</label>
+                    <div class="season-inputs">
+                        <InputSelect class="form-control-dark" @bind-Value="productViewModel.SeasonType">
+                            <option value="">Select Type</option>
+                            <option value="HOME">HOME</option>
+                            <option value="AWAY">AWAY</option>
+                            <option value="THIRD">THIRD</option>
+                        </InputSelect>
+                        <InputSelect class="form-control-dark" @bind-Value="productViewModel.SeasonYear">
+                            <option value="">Select Year</option>
+                            @foreach (var year in SeasonYears)
+                            {
+                                <option value="@year">@year</option>
+                            }
+                        </InputSelect>
                     </div>
                 </div>
-            </div>
 
-            <div class="form-actions">
-                <button type="submit" class="btn-saved">Update</button>
-                <button type="button" class="btn-cancel">Cancel</button>
-            </div>
-        </form>
+                <div class="form-group">
+                    <label for="stockQuantity">Stock Quantity:</label>
+                    <InputNumber id="stockQuantity" class="form-control-dark" @bind-Value="productViewModel.Stock" />
+                </div>
+
+                <div class="form-group">
+                    <label for="productDescription">Description:</label>
+                    <InputTextArea id="productDescription" class="form-control-dark" rows="5" @bind-Value="productViewModel.Description" />
+                </div>
+
+                <div class="form-group">
+                    <label>Image URLs (Optional):</label>
+                    <div class="input-row">
+                        <InputText placeholder="Image URL 1" class="form-control-dark" @bind-Value="productViewModel.ImageUrl1" />
+                        <InputText placeholder="Image URL 2" class="form-control-dark" @bind-Value="productViewModel.ImageUrl2" />
+                        <InputText placeholder="Image URL 3" class="form-control-dark" @bind-Value="productViewModel.ImageUrl3" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Or Upload Images From PC (Max 3):</label>
+                    <div class="input-row">
+                        <InputFile OnChange="@(e => LoadFile(e, 0))" class="form-control-file" />
+                        <InputFile OnChange="@(e => LoadFile(e, 1))" class="form-control-file" />
+                        <InputFile OnChange="@(e => LoadFile(e, 2))" class="form-control-file" />
+                    </div>
+                </div>
+
+                <div class="form-group featured-group">
+                    <label>Featured:</label>
+                    <div class="featured-options">
+                        <InputRadioGroup @bind-Value="productViewModel.IsFeatured">
+                            <div class="form-check">
+                                <InputRadio class="form-check-input" id="featuredYes" Value="true" />
+                                <label class="form-check-label" for="featuredYes">Yes</label>
+                            </div>
+                            <div class="form-check">
+                                <InputRadio class="form-check-input" id="featuredNo" Value="false" />
+                                <label class="form-check-label" for="featuredNo">No</label>
+                            </div>
+                        </InputRadioGroup>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-saved">Update</button>
+                    <button type="button" class="btn-cancel" @onclick='() => NavigationManager.NavigateTo("/admin/products")'>Cancel</button>
+                </div>
+            </EditForm>
+        }
     </div>
 </div>
+
+@code {
+    [Parameter]
+    public int ProductId { get; set; }
+
+    private ProductViewModel? productViewModel;
+    private List<IBrowserFile> loadedFiles = new();
+    private List<string> SeasonYears { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Populate the season years for the dropdown
+        int startYear = 2014;
+        int currentYear = DateTime.Now.Year;
+        for (int year = startYear; year <= currentYear; year++)
+        {
+            SeasonYears.Add($"{year}/{year + 1}");
+        }
+        SeasonYears.Reverse();
+
+        // Fetch the product from the database
+        var product = await DbContext.Products.FindAsync(ProductId);
+
+        if (product != null)
+        {
+            // Map the database model to the view model
+            productViewModel = new ProductViewModel
+            {
+                Name = product.Name,
+                Price = product.Price,
+                Category = product.Category,
+                Stock = product.Stock,
+                Description = product.Description,
+                IsFeatured = product.IsFeatured,
+                ImageUrl1 = product.ImageUrl,
+                ImageUrl2 = product.ImageUrl2,
+                ImageUrl3 = product.ImageUrl3
+            };
+
+            // Safely parse the Season string
+            if (!string.IsNullOrEmpty(product.Season) && product.Season.Contains(" (") && product.Season.EndsWith(")"))
+            {
+                var parts = product.Season.Split(new[] { " (" }, StringSplitOptions.None);
+                if (parts.Length == 2) // Defensive check
+                {
+                    productViewModel.SeasonType = parts[0];
+                    productViewModel.SeasonYear = parts[1].TrimEnd(')');
+                }
+            }
+        }
+    }
+
+    private void LoadFile(InputFileChangeEventArgs e, int index)
+    {
+        while (loadedFiles.Count <= index)
+        {
+            loadedFiles.Add(null!); // Add a placeholder
+        }
+        loadedFiles[index] = e.File;
+    }
+
+    private async Task HandleUpdateSubmit()
+    {
+        var productToUpdate = await DbContext.Products.FindAsync(ProductId);
+        if (productToUpdate == null || productViewModel == null)
+        {
+            return; // Exit if the product doesn't exist
+        }
+
+        // Update properties from the view model
+        productToUpdate.Name = productViewModel.Name;
+        productToUpdate.Price = productViewModel.Price;
+        productToUpdate.Category = productViewModel.Category;
+        productToUpdate.Stock = productViewModel.Stock;
+        productToUpdate.Description = productViewModel.Description;
+        productToUpdate.IsFeatured = productViewModel.IsFeatured;
+        productToUpdate.Season = $"{productViewModel.SeasonType} ({productViewModel.SeasonYear})";
+
+        // Handle file uploads
+        var uploadedImageUrls = new List<string>();
+        foreach (var file in loadedFiles.Where(f => f != null))
+        {
+            var path = Path.Combine(Environment.WebRootPath, "Images", "products", file.Name);
+            var directoryPath = Path.GetDirectoryName(path);
+            if (directoryPath != null)
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
+
+            await using FileStream fs = new(path, FileMode.Create);
+            await file.OpenReadStream(file.Size).CopyToAsync(fs);
+            uploadedImageUrls.Add($"/Images/products/{file.Name}");
+        }
+
+        // Update image URLs, prioritizing newly uploaded files over existing URLs
+        if (uploadedImageUrls.Any())
+        {
+            productToUpdate.ImageUrl = uploadedImageUrls.ElementAtOrDefault(0);
+            productToUpdate.ImageUrl2 = uploadedImageUrls.ElementAtOrDefault(1);
+            productToUpdate.ImageUrl3 = uploadedImageUrls.ElementAtOrDefault(2);
+        }
+        else
+        {
+            productToUpdate.ImageUrl = productViewModel.ImageUrl1;
+            productToUpdate.ImageUrl2 = productViewModel.ImageUrl2;
+            productToUpdate.ImageUrl3 = productViewModel.ImageUrl3;
+        }
+
+        await DbContext.SaveChangesAsync();
+        NavigationManager.NavigateTo("/admin/products");
+    }
+}

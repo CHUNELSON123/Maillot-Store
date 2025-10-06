@@ -1,13 +1,17 @@
 ﻿@using MaillotStore.Models
 
 <div class="product-card">
-    <img src="@Product.ImageUrl" class="card-img-top" alt="@Product.Name">
+    @* Make the image a clickable link *@
+    <a href="/product/@Product.ProductId">
+        <img src="@Product.ImageUrl" class="card-img-top" alt="@Product.Name">
+    </a>
     <div class="card-body">
         <h5 class="card-title">@Product.Name</h5>
         <p class="card-price">@($"FCFA {Product.Price:N0} XAF")</p>
         <p class="card-season">@Product.Season</p>
         <div class="d-grid gap-2">
-            <a href="#" class="btn btn-product-action">
+            @* Make the "View Details" button a working link *@
+            <a href="/product/@Product.ProductId" class="btn btn-product-action">
                 <i class="fas fa-eye me-2"></i> View Details
             </a>
             <a href="#" class="btn btn-product-action">

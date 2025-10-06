@@ -847,53 +847,123 @@ textarea.form-control {
 /* === CHECKOUT PAGE STYLES === */
 
 .checkout-container {
-     max-width: 800px;
-      margin: auto;
-        color: #fff;
+    max-width: 800px;
+    margin: auto;
+    color: #fff;
 }
-
-
 
 .order-summary, .customer-details {
-        background-color: #000000;
-        padding: 2rem;
-        border-radius: 0.5rem;
+    background-color: #000000;
+    padding: 2rem;
+    border-radius: 0.5rem;
 }
-
-
 
 .table-dark {
-        background-color: #000000;
+    background-color: #000000;
 }
 
+/* --- Column Width Adjustments --- */
+.order-summary .table .col-product {
+    width: 60%;
+}
 
+.order-summary .table .col-quantity {
+    width: 25%;
+}
+
+.order-summary .table .col-price {
+    width: 15%;
+    text-align: right;
+}
+
+.order-summary .table td, .order-summary .table th {
+    vertical-align: middle;
+}
 
 .form-control-dark {
-        background-color: #000000;
-        color: #fff;
-        border: 1px solid #ffff;
+    background-color: #000000;
+    color: #fff;
+    border: 1px solid #ffff;
 }
 
+    .form-control-dark::placeholder {
+        color: #ffff;
+    }
 
-
-    .form-control-dark::placeholder {
-            color: #ffff;
-   
-}
-
-    .form-control-dark:focus {
-            background-color: #2c2c2c;
-            color: #fff;
-           border-color: #007bff;
-         box-shadow: none;
-    
-}
-
-
+    .form-control-dark:focus {
+        background-color: #2c2c2c;
+        color: #fff;
+        border-color: #007bff;
+        box-shadow: none;
+    }
 
 .btn-success {
-        background-color: #25D366;
-        border-color: #25D366;
+    background-color: #25D366;
+    border-color: #25D366;
+}
+
+/* --- New Remove Button Style --- */
+.btn-remove-item {
+    background: none;
+    border: none;
+    color: red; /* Red color */
+    font-size: 1.2rem;
+    padding: 0 0.5rem;
+    margin-left: 1rem;
+}
+
+/* === RESPONSIVE STYLES for MOBILE === */
+@media screen and (max-width: 768px) {
+    .order-summary .table thead {
+        display: none;
+    }
+
+    .order-summary .table,
+    .order-summary .table tbody,
+    .order-summary .table tr,
+    .order-summary .table td {
+        display: block;
+        width: 100%;
+    }
+
+        .order-summary .table tr {
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #555;
+            padding-bottom: 1rem;
+        }
+
+        .order-summary .table tbody tr:last-child {
+            border-bottom: 0;
+        }
+
+        .order-summary .table td {
+            text-align: right;
+            padding-left: 50%;
+            position: relative;
+            border: none;
+            padding-bottom: 0.5rem;
+            padding-top: 0.5rem;
+        }
+
+            .order-summary .table td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 15px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: bold;
+                color: #fff;
+            }
+
+            .order-summary .table td[data-label="Product"] .d-flex {
+                justify-content: flex-end; /* Align product info to the right */
+            }
+
+            .order-summary .table td[data-label="Quantity"] .d-flex {
+                justify-content: flex-end !important;
+            }
 }
 
 /*Influencer dashboard style*/
@@ -977,3 +1047,4 @@ textarea.form-control {
     margin: 0.5rem 0;
 }
 
+ 

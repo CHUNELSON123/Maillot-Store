@@ -1,6 +1,10 @@
 ﻿@page "/product/{ProductId:int}"
 @using MaillotStore.Models
 @using MaillotStore.Components.Account.Shared
+@using MaillotStore.Data
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext DbContext
+@inject NavigationManager NavigationManager
 
 <PageTitle>@product?.Name</PageTitle>
 
@@ -17,12 +21,21 @@
             <div class="col-lg-6">
                 <div class="pd-gallery-container">
                     <div class="pd-main-image mb-2">
-                        <img src="@product.ImageUrl" class="img-fluid" alt="Main image of @product.Name">
+                        <img src="@currentImageUrl" class="img-fluid" alt="Main image of @product.Name">
                     </div>
                     <div class="pd-thumbnail-images">
-                        <img src="@product.ImageUrl" class="img-thumbnail active" alt="Thumbnail 1">
-                        <img src="@product.ImageUrl" class="img-thumbnail" alt="Thumbnail 2">
-                        <img src="@product.ImageUrl" class="img-thumbnail" alt="Thumbnail 3">
+                        @if (!string.IsNullOrEmpty(product.ImageUrl))
+                        {
+                            <img src="@product.ImageUrl" class="img-thumbnail @(currentImageUrl == product.ImageUrl ? "active" : "")" alt="Thumbnail 1" @onclick="() => SetMainImage(product.ImageUrl)">
+                        }
+                        @if (!string.IsNullOrEmpty(product.ImageUrl2))
+                        {
+                            <img src="@product.ImageUrl2" class="img-thumbnail @(currentImageUrl == product.ImageUrl2 ? "active" : "")" alt="Thumbnail 2" @onclick="() => SetMainImage(product.ImageUrl2)">
+                        }
+                        @if (!string.IsNullOrEmpty(product.ImageUrl3))
+                        {
+                            <img src="@product.ImageUrl3" class="img-thumbnail @(currentImageUrl == product.ImageUrl3 ? "active" : "")" alt="Thumbnail 3" @onclick="() => SetMainImage(product.ImageUrl3)">
+                        }
                     </div>
                 </div>
             </div>
@@ -38,12 +51,10 @@
                     </div>
                     <hr class="pd-divider" />
 
-                    @* --- CUSTOMIZATION INFO TEXT --- *@
                     <div class="customization-info text-muted mb-4">
                         <h2 style="color: white;">Customization Info</h2>
                     </div>
 
-                    @* --- CUSTOMIZATION: NAME & NUMBER --- *@
                     <div class="row mb-3">
                         <div class="col-md-8 mb-3 mb-md-0">
                             <input type="text" class="form-control form-control-dark-uniform" placeholder="Player Name" @bind="customName" />
@@ -53,7 +64,6 @@
                         </div>
                     </div>
 
-                    @* --- CUSTOMIZATION: SIZE & QUANTITY --- *@
                     <div class="row mb-3">
                         <div class="col-md-8 mb-3 mb-md-0">
                             <select class="form-select form-control-dark-uniform" @bind="selectedSize">
@@ -69,7 +79,6 @@
                         </div>
                     </div>
 
-                    @* --- ACTION BUTTONS --- *@
                     <div class="d-grid gap-3 mt-5">
                         <button class="btn btn-lg btn-dark-uniform" @onclick="AddToCart">
                             <i class="fas fa-shopping-cart me-2"></i> Add to Cart
@@ -82,20 +91,23 @@
             </div>
         </div>
 
-        @* --- YOU MAY ALSO LIKE SECTION --- *@
         <hr class="my-5" />
         <section class="related-products">
             <h2 class="mb-4">You may also like</h2>
-            @if (relatedProducts is not null)
+            @if (relatedProducts.Any())
             {
                 <div class="row g-4">
                     @foreach (var relatedProduct in relatedProducts)
                     {
-                        <div class="col-6 col-lg-4">
+                        <div class="col-6 col-md-4 col-lg-4">
                             <ProductCard Product="relatedProduct" />
                         </div>
                     }
                 </div>
+            }
+            else
+            {
+                <p>No related products found.</p>
             }
         </section>
     }
@@ -106,36 +118,73 @@
     public int ProductId { get; set; }
 
     private Product? product;
-    private List<Product>? relatedProducts;
+    private List<Product> relatedProducts = new();
+    private string? currentImageUrl;
     private string customName = string.Empty;
     private int? customNumber;
     private string? selectedSize;
     private int quantity = 1;
-
     private List<string> availableSizes = new() { "S", "M", "L", "XL", "XXL" };
 
-    protected override void OnInitialized()
+    protected override async Task OnParametersSetAsync()
     {
-        var allProducts = new List<Product>
+        product = await DbContext.Products.FindAsync(ProductId);
+
+        if (product != null)
         {
-            new Product { ProductId = 1, Name = "Manchester United", Season = "HOME (2025/2026)", Price = 60000, ImageUrl = "/Images/liv.jpeg", Description = "The official Manchester United home jersey for the 2025/2026 season." },
-            new Product { ProductId = 2, Name = "Real Madrid", Season = "AWAY (2025/2026)", Price = 65000, ImageUrl = "/Images/real.jpeg", Description = "Support Los Blancos on the road with the official 2025/2026 away jersey." },
-            new Product { ProductId = 3, Name = "Argentina", Season = "HOME (2024/2025)", Price = 55000, ImageUrl = "/Images/psg.jpeg", Description = "The iconic blue and white stripes of the Argentina national team." },
-            new Product { ProductId = 4, Name = "FC Barcelona", Season = "THIRD (2024/2025)", Price = 60000, ImageUrl = "/Images/Barcelona.jpeg", Description = "FC Barcelona's vibrant third kit for the 2024/2025 season." },
-            new Product { ProductId = 5, Name = "Liverpool FC", Season = "HOME (2025/2026)", Price = 62000, ImageUrl = "/Images/liv.jpeg" },
-            new Product { ProductId = 6, Name = "Paris Saint-Germain", Season = "AWAY (2025/2026)", Price = 63000, ImageUrl = "/Images/psg.jpeg" },
-            new Product { ProductId = 7, Name = "Bayern Munich", Season = "HOME (2024/2025)", Price = 61000, ImageUrl = "/Images/real.jpeg" },
-            new Product { ProductId = 8, Name = "Juventus", Season = "THIRD (2024/2025)", Price = 59000, ImageUrl = "/Images/Barcelona.jpeg" },
-            new Product { ProductId = 9, Name = "Chelsea", Season = "HOME (2025/2026)", Price = 60000, ImageUrl = "/Images/liv.jpeg" },
-            new Product { ProductId = 10, Name = "Atletico Madrid", Season = "AWAY (2025/2026)", Price = 65000, ImageUrl = "/Images/real.jpeg" },
-            new Product { ProductId = 11, Name = "Brazil", Season = "HOME (2024/2025)", Price = 55000, ImageUrl = "/Images/psg.jpeg" },
-            new Product { ProductId = 12, Name = "Manchester City", Season = "THIRD (2024/2025)", Price = 60000, ImageUrl = "/Images/Barcelona.jpeg" },
-        };
+            currentImageUrl = product.ImageUrl;
+            await LoadRelatedProducts();
+            StateHasChanged();
+        }
+    }
 
-        product = allProducts.FirstOrDefault(p => p.ProductId == ProductId);
+    private async Task LoadRelatedProducts()
+    {
+        if (product is null) return;
 
-        // Get some random related products, excluding the current one
-        relatedProducts = allProducts.Where(p => p.ProductId != ProductId).OrderBy(x => Guid.NewGuid()).Take(3).ToList();
+        // 1. Get all products in the same category
+        var candidates = await DbContext.Products
+            .Where(p => p.Category == product.Category && p.ProductId != ProductId)
+            .ToListAsync();
+
+        // 2. Score each candidate product based on name similarity and price difference
+        var scoredProducts = candidates.Select(p => new
+        {
+            Product = p,
+            Score = CalculateNameSimilarity(product.Name, p.Name) + CalculatePriceSimilarity(product.Price, p.Price)
+        })
+        .OrderByDescending(x => x.Score) // 3. Order by the highest score
+        .Take(9) // 4. Take the top 9
+        .Select(x => x.Product)
+        .ToList();
+
+        relatedProducts = scoredProducts;
+    }
+
+    // Scores based on how many words are shared between two names
+    private double CalculateNameSimilarity(string name1, string name2)
+    {
+        if (string.IsNullOrEmpty(name1) || string.IsNullOrEmpty(name2)) return 0;
+
+        var name1Words = name1.ToLower().Split(' ').ToHashSet();
+        var name2Words = name2.ToLower().Split(' ');
+
+        double commonWords = name1Words.Intersect(name2Words).Count();
+
+        return commonWords;
+    }
+
+    // Scores based on how close the prices are. The smaller the difference, the higher the score.
+    private double CalculatePriceSimilarity(decimal price1, decimal price2)
+    {
+        var difference = Math.Abs(price1 - price2);
+        // We add 1 to avoid division by zero. The score diminishes as the price difference grows.
+        return 1.0 / (1.0 + (double)difference / 1000.0);
+    }
+
+    private void SetMainImage(string? imageUrl)
+    {
+        currentImageUrl = imageUrl;
     }
 
     private void AddToCart() => Console.WriteLine($"Added to cart: {product?.Name}, Size: {selectedSize}, Quantity: {quantity}, Custom Name: {customName}, Custom Number: {customNumber}");

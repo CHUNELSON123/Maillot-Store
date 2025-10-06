@@ -12,9 +12,11 @@
 <div class="product-container">
     <div class="product-header">
         <h1>Product List</h1>
-        <button class="add-btn" @onclick='() => NavigationManager.NavigateTo("/admin/add-product")'>
-            <span class="plus-icon">+</span>
-        </button>
+        <a href="/admin/add-product">
+            <button class="add-btn">
+                <span class="plus-icon">+</span>
+            </button>
+        </a>
     </div>
 
     <div class="product-table-container">
@@ -29,13 +31,13 @@
                 </tr>
             </thead>
             <tbody>
-                @if (products is not null)
+                @if (products != null)
                 {
                     @foreach (var (product, index) in products.Select((p, i) => (p, i + 1)))
                     {
                         <tr>
                             <td>@index</td>
-                            <td>@product.Name</td>
+                            <td>@TruncateName(product.Name, 30)</td>
                             <td>@product.Price.ToString("C")</td>
                             <td>@product.Stock</td>
                             <td class="action-buttons">
@@ -68,5 +70,20 @@
             products.Remove(product);
             StateHasChanged();
         }
+    }
+
+    private string TruncateName(string name, int maxLength)
+    {
+        if (string.IsNullOrEmpty(name))
+        {
+            return string.Empty;
+        }
+
+        if (name.Length <= maxLength)
+        {
+            return name;
+        }
+
+        return name.Substring(0, maxLength) + "...";
     }
 }
