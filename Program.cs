@@ -1,7 +1,7 @@
 using MaillotStore.Components;
 using MaillotStore.Components.Account;
 using MaillotStore.Data;
-
+using MaillotStore.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +37,8 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
 builder.Services.AddScoped<MaillotStore.Services.ICartService, MaillotStore.Services.CartService>();
+builder.Services.AddSingleton<SearchStateService>(); // Add this line to register the new service
+
 
 var app = builder.Build();
 

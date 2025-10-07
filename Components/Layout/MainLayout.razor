@@ -1,4 +1,6 @@
 ﻿@inherits LayoutComponentBase
+@inject MaillotStore.Services.SearchStateService SearchState
+@inject NavigationManager NavManager
 
 <header>
     <nav class="navbar navbar-expand-lg navbar-dark">
@@ -13,7 +15,8 @@
             <div class="collapse navbar-collapse" id="main-nav-desktop">
                 @* --- Search Bar (Desktop) --- *@
                 <div class="search-container mx-auto d-none d-lg-block">
-                    <input type="text" class="form-control search-bar" placeholder="Search for jerseys...">
+                    <input type="text" class="form-control search-bar" placeholder="Search for jerseys..."
+                           @bind="searchTerm" @oninput="PerformSearch" />
                 </div>
 
                 @* --- Desktop Nav Links --- *@
@@ -35,7 +38,8 @@
 
     @* --- Search Bar (Mobile) --- *@
     <div class="search-container-mobile d-lg-none mt-2 px-3">
-        <input type="text" class="form-control search-bar" placeholder="Search for jerseys...">
+        <input type="text" class="form-control search-bar" placeholder="Search for jerseys..."
+               @bind="searchTerm" @oninput="PerformSearch" />
     </div>
 </header>
 
@@ -55,13 +59,27 @@
     @Body
 </main>
 <Footer />
+
 @code {
     private bool collapseNavMenu = true;
+    private string searchTerm = string.Empty;
 
     private string NavMenuCssClass => collapseNavMenu ? "sidenav" : "sidenav open";
 
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    private void PerformSearch(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? string.Empty;
+        SearchState.SetSearchTerm(searchTerm);
+
+        // Navigate to the shop page if the user starts searching from another page
+        if (!NavManager.Uri.EndsWith("/shop", StringComparison.OrdinalIgnoreCase))
+        {
+            NavManager.NavigateTo("/shop");
+        }
     }
 }
