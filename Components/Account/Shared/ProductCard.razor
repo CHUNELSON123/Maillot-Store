@@ -30,7 +30,9 @@
 
     private void AddToCartAndNavigate(Product product)
     {
-        CartService.AddToCart(product);
+        // --- Corrected the method call with default values ---
+        var defaultSize = product.Sizes?.Split(',').FirstOrDefault()?.Trim() ?? "M"; // Default to "M" if no sizes are specified
+        CartService.AddToCart(product, 1, defaultSize, null, null);
         NavigationManager.NavigateTo("/checkout");
     }
 }

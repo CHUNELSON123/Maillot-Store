@@ -2,6 +2,7 @@
 @using MaillotStore.Models
 @using MaillotStore.Services
 @inject ICartService CartService
+@inject NavigationManager NavigationManager
 @implements IDisposable
 @rendermode InteractiveServer
 
@@ -14,44 +15,65 @@
         @* --- YOUR ORDER SUMMARY --- *@
         <div class="order-summary mb-5">
             <h2 class="mb-3">Your Order Summary</h2>
-            <table class="table table-dark">
-                <thead>
-                    <tr>
-                        <th scope="col">Product</th>
-                        <th scope="col">Quantity</th>
-                        <th scope="col">Price</th>
-                        <th scope="col"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in orderItems)
-                    {
+
+            @if (orderItems.Any())
+            {
+                <table class="table table-dark">
+                    <thead>
                         <tr>
-                            <td data-label="Product">
-                                <div class="d-flex align-items-center">
-                                    <img src="@item.Product.ImageUrl" alt="@item.Product.Name" class="img-fluid me-3" style="width: 50px;">
-                                    <div>
-                                        <strong>@item.Product.Name</strong><br>
-                                        <small class="text-muted">Size: @item.Product.Sizes</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td data-label="Quantity">
-                                <div class="d-flex align-items-center justify-content-end">
-                                    <button class="btn btn-sm btn-outline-light me-2" @onclick="() => UpdateQuantity(item, item.Quantity - 1)">-</button>
-                                    <span>@item.Quantity</span>
-                                    <button class="btn btn-sm btn-outline-light ms-2" @onclick="() => UpdateQuantity(item, item.Quantity + 1)">+</button>
-                                </div>
-                            </td>
-                            <td data-label="Price">FCFA @item.Price.ToString("N0")</td>
-                            <td data-label="Remove"><a href="#" class="text-danger" @onclick="() => RemoveFromCart(item)">Remove Item</a></td>
+                            <th scope="col">Product</th>
+                            <th scope="col">Quantity</th>
+                            <th scope="col">Price</th>
+                            <th scope="col"></th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-            <div class="text-end">
-                <h3>SUBTOTAL: FCFA @Subtotal.ToString("N0") XAF</h3>
-            </div>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in orderItems)
+                        {
+                            <tr>
+                                <td data-label="Product">
+                                    <div class="d-flex align-items-center">
+                                        <img src="@item.Product.ImageUrl" alt="@item.Product.Name" class="img-fluid me-3" style="width: 50px;">
+                                        <div>
+                                            <strong>@item.Product.Name</strong><br>
+                                            <small class="text-muted">Size: @item.Size</small>
+                                            @if (!string.IsNullOrEmpty(item.CustomName) || item.CustomNumber.HasValue)
+                                            {
+                                                <div class="customization-display">
+                                                    <small><em>Custom: @item.CustomName, #@item.CustomNumber</em></small>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td data-label="Quantity">
+                                    <div class="d-flex align-items-center justify-content-end">
+                                        <button class="btn btn-sm btn-outline-light me-2" @onclick="() => UpdateQuantity(item, item.Quantity - 1)">-</button>
+                                        <span>@item.Quantity</span>
+                                        <button class="btn btn-sm btn-outline-light ms-2" @onclick="() => UpdateQuantity(item, item.Quantity + 1)">+</button>
+                                    </div>
+                                </td>
+                                <td data-label="Price">FCFA @item.Price.ToString("N0")</td>
+                                <td data-label="Remove">
+                                    <a href="#" class="text-danger" @onclick:preventDefault @onclick="() => RemoveFromCart(item)">Remove</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <div class="text-end">
+                    <h3>SUBTOTAL: FCFA @Subtotal.ToString("N0") XAF</h3>
+                </div>
+            }
+            else
+            {
+                <div class="text-center p-4">
+                    <p>Your cart is currently empty.</p>
+                    <button class="btn btn-dark" @onclick='() => NavigationManager.NavigateTo("/shop")'>
+                        Go to Shop
+                    </button>
+                </div>
+            }
         </div>
 
         @* --- CUSTOMER DETAILS --- *@
@@ -73,7 +95,7 @@
 
         @* --- CHECKOUT BUTTON --- *@
         <div class="d-grid gap-2 mt-4">
-            <button class="btn btn-lg btn-success">Check Out Via WhatsApp</button>
+            <button class="btn btn-lg btn-success" disabled="@(!orderItems.Any())">Check Out Via WhatsApp</button>
         </div>
     </div>
 </div>
