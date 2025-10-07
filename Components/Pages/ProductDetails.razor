@@ -125,7 +125,7 @@
     private string customName = string.Empty;
     private int? customNumber;
     private string? selectedSize;
-    private int quantity = 1;
+    private int? quantity;
     private List<string> availableSizes = new() { "S", "M", "L", "XL", "XXL" };
 
     protected override async Task OnParametersSetAsync()

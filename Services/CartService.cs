@@ -12,6 +12,7 @@ namespace MaillotStore.Services
         void AddToCart(Product product);
         void RemoveFromCart(OrderItem item);
         void UpdateQuantity(OrderItem item, int quantity);
+        void UpdateSize(OrderItem item, string size); // Add this line
     }
 
     public class CartService : ICartService
@@ -31,7 +32,15 @@ namespace MaillotStore.Services
             }
             else
             {
-                _cartItems.Add(new OrderItem { Product = product, Quantity = 1, Price = product.Price });
+                // Set the default size when adding to cart
+                var defaultSize = product.Sizes?.Split(',').FirstOrDefault()?.Trim();
+                _cartItems.Add(new OrderItem
+                {
+                    Product = product,
+                    Quantity = 1,
+                    Price = product.Price,
+                    Size = defaultSize ?? string.Empty // Ensure a size is set
+                });
             }
             NotifyStateChanged();
         }
@@ -54,6 +63,17 @@ namespace MaillotStore.Services
                 }
             }
             NotifyStateChanged();
+        }
+
+        // Add this new method
+        public void UpdateSize(OrderItem item, string size)
+        {
+            var existingItem = _cartItems.FirstOrDefault(i => i.Product.ProductId == item.Product.ProductId);
+            if (existingItem != null)
+            {
+                existingItem.Size = size;
+                NotifyStateChanged();
+            }
         }
 
         private void NotifyStateChanged() => OnChange?.Invoke();
