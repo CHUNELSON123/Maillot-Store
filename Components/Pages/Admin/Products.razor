@@ -38,7 +38,7 @@
                         <tr>
                             <td>@index</td>
                             <td>@TruncateName(product.Name, 30)</td>
-                            <td>@product.Price.ToString("C")</td>
+                            <td>FCFA @product.Price.ToString("N0") XAF</td>
                             <td>@product.Stock</td>
                             <td class="action-buttons">
                                 <button class="edit-btn" @onclick='() => NavigationManager.NavigateTo($"/admin/edit-product/{product.ProductId}")'>Edit</button>

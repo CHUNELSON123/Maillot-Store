@@ -1,4 +1,5 @@
 ﻿@inject NavigationManager NavigationManager
+@implements IDisposable
 
 <div class="admin-sidebar">
     <nav class="admin-nav">
@@ -14,7 +15,7 @@
         <a href="/admin/influencers" class="@GetNavLinkClass("/admin/influencers")">
             Influencers
         </a>
-        <a href="/admin/commission" class="@GetNavLinkClass("/admin/commissions")">
+        <a href="/admin/commissions" class="@GetNavLinkClass("/admin/commissions")">
             Commission
         </a>
         <a href="/logout" class="nav-link">
@@ -24,8 +25,39 @@
 </div>
 
 @code {
+    protected override void OnInitialized()
+    {
+        // This tells the component to listen for URL changes
+        NavigationManager.LocationChanged += HandleLocationChanged;
+    }
+
     private string GetNavLinkClass(string navLink)
     {
-        return NavigationManager.Uri.EndsWith(navLink, StringComparison.OrdinalIgnoreCase) ? "nav-link active" : "nav-link";
+        // Use Contains for a more robust check that handles child pages
+        if (NavigationManager.Uri.Contains(navLink, StringComparison.OrdinalIgnoreCase))
+        {
+            return "nav-link active";
+        }
+
+        // Special case for the dashboard link, which might be the root of the admin section
+        if (navLink == "/admin/dashboard" && NavigationManager.Uri.EndsWith("/admin"))
+        {
+            return "nav-link active";
+        }
+
+        return "nav-link";
+    }
+
+    // This method is called when the URL changes
+    private void HandleLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        // This forces the component to re-render and update the active link
+        StateHasChanged();
+    }
+
+    // This cleans up the event subscription to prevent memory leaks
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= HandleLocationChanged;
     }
 }

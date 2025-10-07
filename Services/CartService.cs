@@ -9,13 +9,11 @@ namespace MaillotStore.Services
     {
         event Action OnChange;
         List<OrderItem> GetCartItems();
-        // --- Updated method signature to include all customization options ---
         void AddToCart(Product product, int quantity, string size, string? customName, int? customNumber);
         void RemoveFromCart(OrderItem item);
         void UpdateQuantity(OrderItem item, int quantity);
         void UpdateSize(OrderItem item, string size);
-
-       
+        void ClearCart(); // Add this line
     }
 
     public class CartService : ICartService
@@ -26,10 +24,8 @@ namespace MaillotStore.Services
 
         public List<OrderItem> GetCartItems() => _cartItems;
 
-        // --- Updated AddToCart implementation ---
         public void AddToCart(Product product, int quantity, string size, string? customName, int? customNumber)
         {
-            // Find an item with the same product ID, size, and customization
             var existingItem = _cartItems.FirstOrDefault(i =>
                 i.Product.ProductId == product.ProductId &&
                 i.Size == size &&
@@ -63,8 +59,6 @@ namespace MaillotStore.Services
 
         public void UpdateQuantity(OrderItem item, int quantity)
         {
-            // Use a more reliable way to find the item, like a unique ID if available,
-            // but for now, matching on product and customization is robust.
             var existingItem = _cartItems.FirstOrDefault(i =>
                 i.Product.ProductId == item.Product.ProductId &&
                 i.Size == item.Size &&
@@ -90,6 +84,13 @@ namespace MaillotStore.Services
                 existingItem.Size = size;
                 NotifyStateChanged();
             }
+        }
+
+        // --- New method to clear the cart after an order ---
+        public void ClearCart()
+        {
+            _cartItems.Clear();
+            NotifyStateChanged();
         }
 
         private void NotifyStateChanged() => OnChange?.Invoke();

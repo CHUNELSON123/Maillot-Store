@@ -1,8 +1,13 @@
 ﻿@page "/checkout"
+@using MaillotStore.Data
 @using MaillotStore.Models
 @using MaillotStore.Services
+@using Microsoft.EntityFrameworkCore
+@using System.Text
 @inject ICartService CartService
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject ApplicationDbContext DbContext
 @implements IDisposable
 @rendermode InteractiveServer
 
@@ -12,7 +17,7 @@
     <div class="checkout-container">
         <h1 class="text-center mb-4">Check Out</h1>
 
-        @* --- YOUR ORDER SUMMARY --- *@
+        @* --- YOUR ORDER SUMMARY (HTML is unchanged) --- *@
         <div class="order-summary mb-5">
             <h2 class="mb-3">Your Order Summary</h2>
 
@@ -53,7 +58,7 @@
                                         <button class="btn btn-sm btn-outline-light ms-2" @onclick="() => UpdateQuantity(item, item.Quantity + 1)">+</button>
                                     </div>
                                 </td>
-                                <td data-label="Price">FCFA @item.Price.ToString("N0")</td>
+                                <td data-label="Price">FCFA @item.Price.ToString("N0") XAF</td>
                                 <td data-label="Remove">
                                     <a href="#" class="text-danger" @onclick:preventDefault @onclick="() => RemoveFromCart(item)">Remove</a>
                                 </td>
@@ -76,26 +81,28 @@
             }
         </div>
 
-        @* --- CUSTOMER DETAILS --- *@
+        @* --- CUSTOMER DETAILS (HTML is unchanged) --- *@
         <div class="customer-details">
             <h2 class="mb-3">Customer Details</h2>
             <div class="mb-3">
-                <input type="text" class="form-control form-control-dark" placeholder="Name">
+                <input type="text" class="form-control form-control-dark" placeholder="Name" @bind="customerName">
             </div>
             <div class="mb-3">
-                <input type="text" class="form-control form-control-dark" placeholder="Phone Number">
+                <input type="text" class="form-control form-control-dark" placeholder="Phone Number" @bind="customerPhone">
             </div>
             <div class="mb-3">
-                <input type="text" class="form-control form-control-dark" placeholder="Delivery Address">
+                <input type="text" class="form-control form-control-dark" placeholder="Delivery Address" @bind="customerAddress">
             </div>
             <div class="mb-3">
-                <textarea class="form-control form-control-dark" rows="4" placeholder="Optional Message"></textarea>
+                <textarea class="form-control form-control-dark" rows="4" placeholder="Optional Message" @bind="optionalMessage"></textarea>
             </div>
         </div>
 
-        @* --- CHECKOUT BUTTON --- *@
+        @* --- CHECKOUT BUTTON (HTML is unchanged) --- *@
         <div class="d-grid gap-2 mt-4">
-            <button class="btn btn-lg btn-success" disabled="@(!orderItems.Any())">Check Out Via WhatsApp</button>
+            <button class="btn btn-lg btn-success" disabled="@(!orderItems.Any() || string.IsNullOrWhiteSpace(customerName) || string.IsNullOrWhiteSpace(customerPhone))" @onclick="CheckoutViaWhatsApp">
+                Check Out Via WhatsApp
+            </button>
         </div>
     </div>
 </div>
@@ -103,11 +110,81 @@
 @code {
     private List<OrderItem> orderItems = new();
     private decimal Subtotal => orderItems.Sum(item => item.Price * item.Quantity);
+    private string customerName;
+    private string customerPhone;
+    private string customerAddress;
+    private string optionalMessage;
 
     protected override void OnInitialized()
     {
         orderItems = CartService.GetCartItems();
         CartService.OnChange += StateHasChanged;
+    }
+
+    private async Task CheckoutViaWhatsApp()
+    {
+        if (!orderItems.Any() || string.IsNullOrWhiteSpace(customerName) || string.IsNullOrWhiteSpace(customerPhone))
+        {
+            return;
+        }
+
+        var order = new Order
+        {
+            CustomerName = customerName,
+            CustomerPhone = customerPhone,
+            CustomerAddress = customerAddress,
+            OrderDate = DateTime.UtcNow,
+            OrderItems = orderItems,
+            TotalAmount = Subtotal
+        };
+
+        DbContext.Orders.Add(order);
+        await DbContext.SaveChangesAsync();
+
+        var messageBuilder = new StringBuilder();
+        messageBuilder.AppendLine("Hello Maillot Store,");
+        messageBuilder.AppendLine();
+        messageBuilder.AppendLine($"An order has been placed with the following details (Order ID: {order.Id}):");
+        messageBuilder.AppendLine();
+        messageBuilder.AppendLine($"  Name: {customerName}");
+        messageBuilder.AppendLine($"  Phone: {customerPhone}");
+        messageBuilder.AppendLine($"  Address: {customerAddress}");
+        messageBuilder.AppendLine();
+        messageBuilder.AppendLine("  Order Details:");
+
+        int itemNumber = 1;
+        foreach (var item in orderItems)
+        {
+            messageBuilder.Append($"{itemNumber}. {item.Product.Name} (x{item.Quantity}) - Size: {item.Size}");
+            if (!string.IsNullOrEmpty(item.CustomName))
+            {
+                messageBuilder.Append($" - Name: {item.CustomName}");
+            }
+            if (item.CustomNumber.HasValue)
+            {
+                messageBuilder.Append($" - Number: {item.CustomNumber}");
+            }
+            messageBuilder.AppendLine($" – FCFA {item.Price.ToString("N0")} XAF");
+
+            string productUrl = $"{NavigationManager.BaseUri}product/{item.Product.ProductId}";
+            messageBuilder.AppendLine($"   Link: {productUrl}");
+
+            itemNumber++;
+        }
+
+        messageBuilder.AppendLine();
+        messageBuilder.AppendLine($"  Total: FCFA {Subtotal.ToString("N0")} XAF");
+        messageBuilder.AppendLine();
+        messageBuilder.AppendLine("Thank you.");
+
+        string whatsappMessage = Uri.EscapeDataString(messageBuilder.ToString());
+        string whatsappUrl = $"https://wa.me/237671007313?text={whatsappMessage}";
+
+        // *** CORRECTED: Fixed the typo in the method name ***
+        await JSRuntime.InvokeVoidAsync("open", whatsappUrl, "_blank");
+
+        CartService.ClearCart();
+        NavigationManager.NavigateTo("/checkout");
     }
 
     private void RemoveFromCart(OrderItem item)

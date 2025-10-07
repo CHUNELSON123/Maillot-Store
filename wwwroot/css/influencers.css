@@ -3,40 +3,51 @@
 .influencer-container {
     padding: 2rem;
     color: #fff;
+    background-color: #000 !important;
+    margin-bottom: 2rem;
+    
 }
 
-.influencer-header h1 {
+.influencer-list-title {
     font-size: 2.5rem;
     font-weight: bold;
-    margin-bottom: 0.5rem;
-}
-
-.influencer-header h2 {
-    font-size: 1.5rem;
-    font-weight: normal;
     margin-bottom: 2rem;
-    color: #ccc;
+    border-bottom: 1px solid #fff;
+    padding-bottom: 1rem;
+}
+/* --- FINAL BORDER CORRECTIONS --- */
+/* This container will act as the main white border */
+.influencer-table-container {
+    border: 1px solid #fff !important;
+    padding: 0; /* Remove padding to make it a tight border */
 }
 
-.influencer-table-container .table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: #000;
-    color: #fff;
-    border: 1px solid #555;
-}
-
-    .influencer-table-container .table th,
-    .influencer-table-container .table td {
-        border: 1px solid #555;
-        padding: 0.75rem 1rem;
-        text-align: left;
+    .influencer-table-container .table {
+        width: 100% !important; /* Table fills the container */
+        margin: 0 auto !important;
+        border-collapse: collapse;
+        background-color: #000 !important;
+        color: #fff;
+        border: none; /* The table itself has no border */
     }
 
-    .influencer-table-container .table thead th {
-        font-weight: bold;
-        background-color: #1a1a1a;
-    }
+        /* This sets the INNER grid lines to the dark color */
+        .influencer-table-container .table th,
+        .influencer-table-container .table td {
+            border: 1px solid #444 !important;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            background-color: #000 !important;
+        }
+
+        /* This rule makes the BOTTOM border of the header WHITE */
+        .influencer-table-container .table thead th {
+            border-bottom: 1px solid #fff !important;
+            font-weight: bold;
+        }
+
+/* --- END OF CORRECTIONS --- */
+
 
 .action-buttons .view-btn {
     background-color: #009400;

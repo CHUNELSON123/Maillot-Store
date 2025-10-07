@@ -1,11 +1,16 @@
 ﻿@page "/admin/orders"
 @using MaillotStore.Components.Layout
+@using MaillotStore.Data
+@using MaillotStore.Models
+@using Microsoft.EntityFrameworkCore
 @layout AdminLayout
+@inject ApplicationDbContext DbContext
+@inject NavigationManager NavigationManager
 
 <PageTitle>Orders</PageTitle>
 
 <div class="orders-container">
-     
+
     <h1 class="order-list-title">Order List</h1>
 
     <div class="table-responsive">
@@ -20,40 +25,37 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>1</td>
-                    <td>John Doe</td>
-                    <td>3</td>
-                    <td>FCFA 150,000</td>
-                    <td>
-                        <button class="btn btn-view">View</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>2</td>
-                    <td>Jane Smith</td>
-                    <td>1</td>
-                    <td>FCFA 50,000</td>
-                    <td>
-                        <button class="btn btn-view">View</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>3</td>
-                    <td>Peter Jones</td>
-                    <td>2</td>
-                    <td>FCFA 100,000</td>
-                    <td>
-                        <button class="btn btn-view">View</button>
-                    </td>
-                </tr>
+                @if (orders != null)
+                {
+                    @foreach (var order in orders)
+                    {
+                        <tr>
+                            <td>@order.Id</td>
+                            <td>@order.CustomerName</td>
+                            <td>@order.OrderItems.Count()</td>
+                            <td>FCFA @order.TotalAmount.ToString("N0") XAF</td>
+                            <td>
+                                <button class="btn btn-view" @onclick="() => ViewOrder(order.Id)">View</button>
+                            </td>
+                        </tr>
+                    }
+                }
             </tbody>
         </table>
     </div>
-
-    <div class="pagination-container">
-        <button class="btn btn-page-active">1</button>
-        <button class="btn btn-page">2</button>
-        <button class="btn btn-page">3</button>
-    </div>
+    @* Add your pagination logic here if needed *@
 </div>
+
+@code {
+    private List<Order> orders;
+
+    protected override async Task OnInitializedAsync()
+    {
+        orders = await DbContext.Orders.Include(o => o.OrderItems).ToListAsync();
+    }
+
+    private void ViewOrder(int orderId)
+    {
+        NavigationManager.NavigateTo($"/admin/view-order/{orderId}");
+    }
+}

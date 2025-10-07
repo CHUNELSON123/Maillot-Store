@@ -1,55 +1,92 @@
-﻿@page "/admin/view-order"
+﻿@page "/admin/view-order/{OrderId:int}"
 @using MaillotStore.Components.Layout
+@using MaillotStore.Data
+@using MaillotStore.Models
+@using Microsoft.EntityFrameworkCore
 @layout AdminLayout
+@inject ApplicationDbContext DbContext
+@inject NavigationManager NavigationManager
 
 <PageTitle>Order Details</PageTitle>
 
-<div class="order-details-container">
-    <div class="order-details-header">
-        <h1>Order Details</h1>
-        <button class="back-btn">Back</button>
-    </div>
-
-    <div class="order-details-body">
-        <div class="customer-info-section">
-            <h2>Customer Info:</h2>
-            <p><strong>Name:</strong> Annie</p>
-            <p><strong>Phone:</strong> 67x xxx xxx</p>
-            <p><strong>Order Date:</strong> 20/09/2025</p>
+@if (order == null)
+{
+    <p><em>Loading order details...</em></p>
+}
+else
+{
+    <div class="order-details-container">
+        <div class="order-details-header">
+            <h1>Order Details</h1>
+            <button class="back-btn" @onclick="GoBack">Back</button>
         </div>
 
-        <div class="order-info-section">
-            <h2>Order Info:</h2>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>S/N</th>
-                        <th>Product</th>
-                        <th>Quantity</th>
-                        <th>Price</th>
-                        <th>Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>&nbsp;</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td>&nbsp;</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                </tbody>
-            </table>
-            <div class="order-total">
-                <p><strong>Total:</strong></p>
+        <div class="order-details-body">
+            <div class="customer-info-section">
+                <h2>Customer Info:</h2>
+                <p><strong>Name:</strong> @order.CustomerName</p>
+                <p><strong>Phone:</strong> @order.CustomerPhone</p>
+                <p><strong>Address:</strong> @order.CustomerAddress</p>
+                <p><strong>Order Date:</strong> @order.OrderDate.ToString("dd/MM/yyyy")</p>
+            </div>
+
+            <div class="order-info-section">
+                <h2>Order Info:</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>S/N</th>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (item, index) in order.OrderItems.Select((item, index) => (item, index)))
+                        {
+                            <tr>
+                                <td>@(index + 1)</td>
+                                <td>
+                                    @item.Product.Name
+                                    @if (!string.IsNullOrEmpty(item.CustomName) || item.CustomNumber.HasValue)
+                                    {
+                                        <div class="customization-display">
+                                            <small><em>Custom: @item.CustomName, #@item.CustomNumber</em></small>
+                                        </div>
+                                    }
+                                </td>
+                                <td>@item.Quantity</td>
+                                <td>FCFA @item.Price.ToString("N0")</td>
+                                <td>FCFA @((item.Price * item.Quantity).ToString("N0"))</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <div class="order-total">
+                    <p><strong>Total:</strong> FCFA @order.TotalAmount.ToString("N0")</p>
+                </div>
             </div>
         </div>
     </div>
-</div>
+}
+
+@code {
+    [Parameter]
+    public int OrderId { get; set; }
+
+    private Order? order;
+
+    protected override async Task OnInitializedAsync()
+    {
+        order = await DbContext.Orders
+            .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+            .FirstOrDefaultAsync(o => o.Id == OrderId);
+    }
+
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/admin/orders");
+    }
+}
