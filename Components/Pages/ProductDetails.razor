@@ -3,8 +3,10 @@
 @using MaillotStore.Components.Account.Shared
 @using MaillotStore.Data
 @using Microsoft.EntityFrameworkCore
+@using MaillotStore.Services
 @inject ApplicationDbContext DbContext
 @inject NavigationManager NavigationManager
+@inject ICartService CartService
 
 <PageTitle>@product?.Name</PageTitle>
 
@@ -142,26 +144,23 @@
     {
         if (product is null) return;
 
-        // 1. Get all products in the same category
         var candidates = await DbContext.Products
             .Where(p => p.Category == product.Category && p.ProductId != ProductId)
             .ToListAsync();
 
-        // 2. Score each candidate product based on name similarity and price difference
         var scoredProducts = candidates.Select(p => new
         {
             Product = p,
             Score = CalculateNameSimilarity(product.Name, p.Name) + CalculatePriceSimilarity(product.Price, p.Price)
         })
-        .OrderByDescending(x => x.Score) // 3. Order by the highest score
-        .Take(9) // 4. Take the top 9
+        .OrderByDescending(x => x.Score)
+        .Take(9)
         .Select(x => x.Product)
         .ToList();
 
         relatedProducts = scoredProducts;
     }
 
-    // Scores based on how many words are shared between two names
     private double CalculateNameSimilarity(string name1, string name2)
     {
         if (string.IsNullOrEmpty(name1) || string.IsNullOrEmpty(name2)) return 0;
@@ -174,11 +173,9 @@
         return commonWords;
     }
 
-    // Scores based on how close the prices are. The smaller the difference, the higher the score.
     private double CalculatePriceSimilarity(decimal price1, decimal price2)
     {
         var difference = Math.Abs(price1 - price2);
-        // We add 1 to avoid division by zero. The score diminishes as the price difference grows.
         return 1.0 / (1.0 + (double)difference / 1000.0);
     }
 
@@ -187,6 +184,21 @@
         currentImageUrl = imageUrl;
     }
 
-    private void AddToCart() => Console.WriteLine($"Added to cart: {product?.Name}, Size: {selectedSize}, Quantity: {quantity}, Custom Name: {customName}, Custom Number: {customNumber}");
-    private void OrderNow() => Console.WriteLine($"Ordering now: {product?.Name}, Size: {selectedSize}, Quantity: {quantity}, Custom Name: {customName}, Custom Number: {customNumber}");
+    private void AddToCart()
+    {
+        if (product != null)
+        {
+            CartService.AddToCart(product);
+            NavigationManager.NavigateTo("/checkout");
+        }
+    }
+
+    private void OrderNow()
+    {
+        if (product != null)
+        {
+            CartService.AddToCart(product);
+            NavigationManager.NavigateTo("/checkout");
+        }
+    }
 }

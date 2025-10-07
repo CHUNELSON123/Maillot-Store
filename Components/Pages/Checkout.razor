@@ -1,5 +1,8 @@
 ﻿@page "/checkout"
 @using MaillotStore.Models
+@using MaillotStore.Services
+@inject ICartService CartService
+@implements IDisposable
 @rendermode InteractiveServer
 
 <PageTitle>Checkout</PageTitle>
@@ -35,13 +38,13 @@
                             </td>
                             <td data-label="Quantity">
                                 <div class="d-flex align-items-center justify-content-end">
-                                    <button class="btn btn-sm btn-outline-light me-2">-</button>
+                                    <button class="btn btn-sm btn-outline-light me-2" @onclick="() => UpdateQuantity(item, item.Quantity - 1)">-</button>
                                     <span>@item.Quantity</span>
-                                    <button class="btn btn-sm btn-outline-light ms-2">+</button>
+                                    <button class="btn btn-sm btn-outline-light ms-2" @onclick="() => UpdateQuantity(item, item.Quantity + 1)">+</button>
                                 </div>
                             </td>
                             <td data-label="Price">FCFA @item.Price.ToString("N0")</td>
-                            <td data-label="Remove"><a href="#" class="text-danger">Remove Item</a></td>
+                            <td data-label="Remove"><a href="#" class="text-danger" @onclick="() => RemoveFromCart(item)">Remove Item</a></td>
                         </tr>
                     }
                 </tbody>
@@ -81,21 +84,22 @@
 
     protected override void OnInitialized()
     {
-        // Dummy data for demonstration
-        orderItems = new List<OrderItem>
-        {
-            new OrderItem
-            {
-                Product = new Product { ProductId = 10, Name = "Atletico de madrid Home Jersey (2025/2026)", ImageUrl = "/Images/real.jpeg", Sizes = "S" },
-                Quantity = 2,
-                Price = 15000
-            },
-            new OrderItem
-            {
-                Product = new Product { ProductId = 10, Name = "Atletico de madrid Home Jersey (2025/2026) - RED & WHITE STRIPES", ImageUrl = "/Images/real.jpeg", Sizes = "S" },
-                Quantity = 1,
-                Price = 30000
-            }
-        };
+        orderItems = CartService.GetCartItems();
+        CartService.OnChange += StateHasChanged;
+    }
+
+    private void RemoveFromCart(OrderItem item)
+    {
+        CartService.RemoveFromCart(item);
+    }
+
+    private void UpdateQuantity(OrderItem item, int quantity)
+    {
+        CartService.UpdateQuantity(item, quantity);
+    }
+
+    public void Dispose()
+    {
+        CartService.OnChange -= StateHasChanged;
     }
 }
