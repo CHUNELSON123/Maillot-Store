@@ -9,6 +9,7 @@ namespace MaillotStore.Data
         public string? PhoneNumber { get; set; }
 
         public string? ReferralCode { get; set; }
+        public DateTime JoinedDate { get; set; }
     }
 
 }

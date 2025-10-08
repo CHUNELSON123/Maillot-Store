@@ -4,7 +4,6 @@ using MaillotStore.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -12,11 +11,9 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MaillotStore.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251008112850_AddReferralCodeToUser")]
-    partial class AddReferralCodeToUser
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -46,6 +43,9 @@ namespace MaillotStore.Migrations
 
                     b.Property<string>("FullName")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("JoinedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -116,8 +116,21 @@ namespace MaillotStore.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsVisibleToAdmin")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVisibleToInfluencer")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("ReferralCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");

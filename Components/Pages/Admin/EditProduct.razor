@@ -2,6 +2,7 @@
 @using MaillotStore.Components.Layout
 @using MaillotStore.Models
 @using MaillotStore.Data
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.Extensions.Logging
 @using Microsoft.EntityFrameworkCore
@@ -13,6 +14,7 @@
 @inject NavigationManager NavigationManager
 @inject IWebHostEnvironment Environment
 @inject ILogger<EditProduct> Logger
+ 
 
 <PageTitle>Edit Product</PageTitle>
 

@@ -13,5 +13,16 @@ namespace MaillotStore.Data
 
         public DbSet<Order> Orders { get; set; }
 
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            // Configure decimal properties to have a specific precision
+            builder.Entity<Product>().Property(p => p.Price).HasColumnType("decimal(18,2)");
+            builder.Entity<OrderItem>().Property(p => p.Price).HasColumnType("decimal(18,2)");
+            builder.Entity<Order>().Property(p => p.TotalAmount).HasColumnType("decimal(18,2)");
+        }
+
     }
 }

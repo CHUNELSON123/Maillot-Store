@@ -1,82 +1,174 @@
-﻿@page "/admin/view-influencer"
+﻿@page "/admin/view-influencer/{InfluencerId}"
+@using MaillotStore.Data
+@using MaillotStore.Models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject UserManager<ApplicationUser> UserManager
+@inject ApplicationDbContext DbContext
+@inject NavigationManager NavigationManager
 @layout Components.Layout.AdminLayout
+ 
 
 <PageTitle>View Influencer</PageTitle>
 
-<div class="view-influencer-container">
-    <h1 class="influencer-details-title">Influencer Details - Annie</h1>
+@if (influencer is null)
+{
+    <p><em>Loading influencer details...</em></p>
+}
+else
+{
+    <div class="view-influencer-container">
+        <h1 class="influencer-details-title">Influencer Details - @influencer.FullName</h1>
 
-    <div class="influencer-section">
-        <h2 class="section-title">Personal Info:</h2>
-        <div class="personal-info">
-            <p><strong>Name:</strong> Annie</p>
-            <p><strong>Phone:</strong> 67x xxx xxx</p>
-            <p><strong>Email:</strong> annie@gmail.com</p>
-            <p><strong>Referral Code:</strong> ANNIE123</p>
-            <p><strong>Joined:</strong> 20/09/2025</p>
+        <div class="influencer-section">
+            <h2 class="section-title">Personal Info:</h2>
+            <div class="personal-info">
+                <p><strong>Name:</strong> @influencer.FullName</p>
+                <p><strong>Phone:</strong> @influencer.PhoneNumber</p>
+                <p><strong>Email:</strong> @influencer.Email</p>
+                <p><strong>Referral Code:</strong> @influencer.ReferralCode</p>
+                <p><strong>Joined:</strong> @influencer.JoinedDate.AddHours(1).ToString("dd/MM/yyyy")</p>
+            </div>
+        </div>
+
+        <div class="influencer-section">
+            <h2 class="section-title">Performance:</h2>
+            <div class="table-wrapper">
+                <table class="table performance-table">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Total Sales</td>
+                            <td>@influencer.TotalSales</td>
+                        </tr>
+                        <tr>
+                            <td>Commission Earned</td>
+                            <td>FCFA @influencer.CommissionEarned.ToString("N0") XAF</td>
+                        </tr>
+                        <tr>
+                            <td>Commission Paid</td>
+                            <td>FCFA @influencer.CommissionPaid.ToString("N0") XAF</td>
+                        </tr>
+                        <tr>
+                            <td>Balance Remaining</td>
+                            <td>FCFA @influencer.BalanceRemaining.ToString("N0") XAF</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="influencer-section">
+            <h2 class="section-title">Sales via Referrals:</h2>
+            <div class="table-wrapper">
+                <table class="table sales-table">
+                    <thead>
+                        <tr>
+                            <th>S/N</th>
+                            <th>Date and Time</th>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Amount</th>
+                            <th>Commission</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!influencer.ReferredOrders.Any())
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center">No sales recorded for this influencer.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var (order, index) in influencer.ReferredOrders.Select((o, i) => (o, i)))
+                            {
+                                @foreach (var item in order.OrderItems)
+                                {
+                                    <tr>
+                                        <td>@(index + 1)</td>
+                                        <td>@order.OrderDate.AddHours(1).ToString("g")</td>
+                                        <td>@item.Product.Name</td>
+                                        <td>@item.Quantity</td>
+                                        <td>FCFA @item.Price.ToString("N0") XAF</td>
+                                        <td>FCFA @((item.Price * item.Quantity * 0.07m).ToString("N0")) XAF</td>
+                                    </tr>
+                                }
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="back-button-container">
+            <button class="btn-back" @onclick="GoBack">Back</button>
         </div>
     </div>
+}
 
-    <div class="influencer-section">
-        <h2 class="section-title">Performance:</h2>
-        <div class="table-wrapper">
-            <table class="table performance-table">
-                <thead>
-                    <tr>
-                        <th>Metric</th>
-                        <th>Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Total Sales</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td>Commission Earned</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td>Commission Paid</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td>Balance Remaining</td>
-                        <td></td>
-                    </tr>
-                </tbody>
-            </table>
-       </div>
-    </div>
+@code {
+    [Parameter]
+    public string? InfluencerId { get; set; }
 
-    <div class="influencer-section">
-        <h2 class="section-title">Sales via Referrals:</h2>
-        <div class="table-wrapper">
-            <table class="table sales-table">
-                <thead>
-                    <tr>
-                        <th>S/N</th>
-                        <th>Date and Time</th>
-                        <th>Product</th>
-                        <th>Quantity</th>
-                        <th>Amount</th>
-                        <th>Commission</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>22/09/25 02:00</td>
-                        <td>Barca Jersey</td>
-                        <td>2</td>
-                        <td>35,000 XAF</td>
-                        <td>8,000 XAF</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="back-button-container">
-        <button class="btn-back">Back</button>
-    </div>
-</div>
+    private InfluencerDetailsViewModel? influencer;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrEmpty(InfluencerId))
+        {
+            var user = await UserManager.FindByIdAsync(InfluencerId);
+            if (user != null)
+            {
+                var orders = await DbContext.Orders
+                    .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                    .Where(o => o.ReferralCode == user.ReferralCode)
+                    .OrderByDescending(o => o.OrderDate)
+                    .ToListAsync();
+
+                var totalCommission = orders.Sum(o => o.TotalAmount * 0.07m);
+                var paidCommission = orders.Where(o => o.Status == "Paid").Sum(o => o.TotalAmount * 0.07m);
+
+                influencer = new InfluencerDetailsViewModel
+                {
+                    FullName = user.FullName,
+                    PhoneNumber = user.PhoneNumber,
+                    Email = user.Email,
+                    ReferralCode = user.ReferralCode,
+                    JoinedDate = user.JoinedDate, // <-- CORRECTED THIS LINE
+                    TotalSales = orders.Count,
+                    CommissionEarned = totalCommission,
+                    CommissionPaid = paidCommission,
+                    BalanceRemaining = totalCommission - paidCommission,
+                    ReferredOrders = orders
+                };
+            }
+        }
+    }
+
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/admin/influencers");
+    }
+
+    // A helper class to hold all the data for the view
+    public class InfluencerDetailsViewModel
+    {
+        public string? FullName { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? Email { get; set; }
+        public string? ReferralCode { get; set; }
+        public DateTime JoinedDate { get; set; }
+        public int TotalSales { get; set; }
+        public decimal CommissionEarned { get; set; }
+        public decimal CommissionPaid { get; set; }
+        public decimal BalanceRemaining { get; set; }
+        public List<Order> ReferredOrders { get; set; } = new();
+    }
+}

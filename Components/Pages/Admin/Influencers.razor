@@ -1,13 +1,20 @@
 ﻿@page "/admin/influencers"
 @using MaillotStore.Components.Layout
+@using MaillotStore.Data
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject UserManager<ApplicationUser> UserManager
+@inject ApplicationDbContext DbContext
+@inject NavigationManager NavigationManager
 @layout AdminLayout
+ 
 
 <PageTitle>Influencers</PageTitle>
 
 <div class="influencer-container">
     <div class="influencer-header">
         <h1 class="influencer-list-title">Influencer List</h1>
-        
     </div>
 
     <div class="influencer-table-container">
@@ -23,28 +30,110 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>1</td>
-                    <td>CHU NELSON</td>
-                    <td>6 71 00 73 13</td>
-                    <td>5</td>
-                    <td></td>
-                    <td class="action-buttons">
-                        <button class="view-btn">View</button>
-                    </td>
-                </tr>
+                @if (pagedInfluencers != null && pagedInfluencers.Any())
+                {
+                    @foreach (var (influencer, index) in pagedInfluencers.Select((item, i) => (item, i)))
+                    {
+                        <tr>
+                            <td>@((currentPage - 1) * pageSize + index + 1)</td>
+                            <td>@influencer.FullName</td>
+                            <td>@influencer.PhoneNumber</td>
+                            <td>@influencer.SalesCount</td>
+                            <td>FCFA @influencer.CommissionEarned.ToString("N0") XAF</td>
+                            <td class="action-buttons">
+                                <button class="view-btn" @onclick="() => ViewInfluencer(influencer.Id)">View</button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center">No influencers found.</td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>
 
+    @* --- PAGINATION --- *@
     <div class="pagination">
-        <button class="active">1</button>
-        <button>2</button>
-        <button>3</button>
-        <button>4</button>
-        <button>5</button>
-        <button>6</button>
-        <button>7</button>
-        <button>&raquo;</button>
+        @for (int i = 1; i <= totalPages; i++)
+        {
+            var pageNumber = i;
+            <button class="@(pageNumber == currentPage ? "active" : "")" @onclick="() => ChangePage(pageNumber)">@pageNumber</button>
+        }
     </div>
 </div>
+
+@code {
+    private List<InfluencerViewModel> allInfluencers = new();
+    private List<InfluencerViewModel> pagedInfluencers = new();
+    private int currentPage = 1;
+    private int pageSize = 20;
+    private int totalPages;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInfluencers();
+    }
+
+    private async Task LoadInfluencers()
+    {
+        allInfluencers.Clear();
+        var influencerUsers = await UserManager.GetUsersInRoleAsync("Influencer");
+
+        foreach (var user in influencerUsers.OrderBy(u => u.FullName))
+        {
+            var orders = await DbContext.Orders
+                .Where(o => o.ReferralCode == user.ReferralCode)
+                .ToListAsync();
+
+            var commission = orders.Sum(o => o.TotalAmount * 0.07m);
+
+            allInfluencers.Add(new InfluencerViewModel
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                PhoneNumber = user.PhoneNumber,
+                SalesCount = orders.Count,
+                CommissionEarned = commission
+            });
+        }
+
+        totalPages = (int)Math.Ceiling(allInfluencers.Count / (double)pageSize);
+        UpdatePagedInfluencers();
+    }
+
+    private void UpdatePagedInfluencers()
+    {
+        pagedInfluencers = allInfluencers
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+    }
+
+    private void ChangePage(int pageNumber)
+    {
+        if (pageNumber < 1 || pageNumber > totalPages)
+        {
+            return;
+        }
+        currentPage = pageNumber;
+        UpdatePagedInfluencers();
+    }
+
+    private void ViewInfluencer(string influencerId)
+    {
+        NavigationManager.NavigateTo($"/admin/view-influencer/{influencerId}");
+    }
+
+    public class InfluencerViewModel
+    {
+        public string Id { get; set; }
+        public string? FullName { get; set; }
+        public string? PhoneNumber { get; set; }
+        public int SalesCount { get; set; }
+        public decimal CommissionEarned { get; set; }
+    }
+}

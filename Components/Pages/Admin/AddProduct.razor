@@ -2,6 +2,7 @@
 @using MaillotStore.Components.Layout
 @using MaillotStore.Models
 @using MaillotStore.Data
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.Extensions.Logging
 @using System.ComponentModel.DataAnnotations
@@ -12,6 +13,7 @@
 @inject NavigationManager NavigationManager
 @inject IWebHostEnvironment Environment
 @inject ILogger<AddProduct> Logger
+ 
 
 <PageTitle>Add Product</PageTitle>
 

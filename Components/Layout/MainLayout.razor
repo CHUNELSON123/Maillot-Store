@@ -26,20 +26,25 @@
                     <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
                     <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
                     <li class="nav-item"><a class="nav-link" href="/checkout">Checkout</a></li>
-
+                    
                     <AuthorizeView>
                         <Authorized>
-                            @if (context.User.IsInRole("Influencer"))
-                            {
+                             @if (context.User.IsInRole("Influencer"))
+                             {
                                 <li class="nav-item"><a class="nav-link" href="/influencer-dashboard">Dashboard</a></li>
-                                <li class="nav-item">
-                                    <form action="/Account/Logout" method="post">
-                                        <AntiforgeryToken />
-                                        <input type="hidden" name="returnUrl" value="/" /> @* <-- CORRECTED VALUE *@
-                                        <button type="submit" class="nav-link btn btn-link">Logout</button>
-                                    </form>
-                                </li>
-                            }
+                             }
+                             else if (context.User.IsInRole("Admin"))
+                             {
+                                <li class="nav-item"><a class="nav-link" href="/admin/dashboard">Dashboard</a></li>
+                             }
+
+                             <li class="nav-item">
+                                <form action="/Account/Logout" method="post">
+                                    <AntiforgeryToken />
+                                    <input type="hidden" name="returnUrl" value="/" />
+                                    <button type="submit" class="nav-link btn btn-link">Logout</button>
+                                </form>
+                            </li>
                         </Authorized>
                         <NotAuthorized>
                             <li class="nav-item"><a class="nav-link" href="/Account/Login">Login</a></li>
@@ -73,16 +78,20 @@
         <a class="nav-link" href="/checkout">Checkout</a>
 
         <AuthorizeView>
-            <Authorized>
-                @if (context.User.IsInRole("Influencer"))
-                {
+             <Authorized>
+                 @if (context.User.IsInRole("Influencer"))
+                 {
                     <a class="nav-link" href="/influencer-dashboard">Dashboard</a>
-                    <form action="/Account/Logout" method="post" class="w-100">
-                        <AntiforgeryToken />
-                        <input type="hidden" name="returnUrl" value="/" /> @* <-- CORRECTED VALUE *@
-                        <button type="submit" class="nav-link btn btn-link text-start w-100">Logout</button>
-                    </form>
-                }
+                 }
+                 else if (context.User.IsInRole("Admin"))
+                 {
+                    <a class="nav-link" href="/admin/dashboard">Dashboard</a>
+                 }
+                <form action="/Account/Logout" method="post" class="w-100">
+                    <AntiforgeryToken />
+                    <input type="hidden" name="returnUrl" value="/" />
+                    <button type="submit" class="nav-link btn btn-link text-start w-100">Logout</button>
+                </form>
             </Authorized>
             <NotAuthorized>
                 <a class="nav-link" href="/Account/Login">Login</a>

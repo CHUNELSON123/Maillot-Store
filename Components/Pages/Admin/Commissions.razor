@@ -1,11 +1,20 @@
 ﻿@page "/admin/commissions"
-@layout Components.Layout.AdminLayout
+@using MaillotStore.Components.Layout
+@using MaillotStore.Data
+@using MaillotStore.Models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@layout AdminLayout
+@inject ApplicationDbContext DbContext
+@inject UserManager<ApplicationUser> UserManager
+@inject Services.OrderStateService OrderStateService
+ 
 
 <PageTitle>Commissions</PageTitle>
 
 <div class="commissions-container">
     <h1 class="commissions-title">Commission List</h1>
-    
 
     <div class="table-responsive">
         <table class="table commissions-table">
@@ -14,41 +23,161 @@
                     <th>S/N</th>
                     <th>Date and Time</th>
                     <th>Influencer</th>
-                    <th>Product</th>
+                    <th>Product(s)</th>
                     <th>Amount</th>
                     <th>Commission</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>1</td>
-                    <td>19/09/2025 13:51</td>
-                    <td>Beh Chu</td>
-                    <td>Barca Jersey</td>
-                    <td>35,000</td>
-                    <td>5,000</td>
-                    <td><button class="btn btn-mark-paid">Mark as Paid</button></td>
-                </tr>
+                @if (pagedCommissions != null && pagedCommissions.Any())
+                {
+                    @foreach (var (commission, index) in pagedCommissions.Select((item, i) => (item, i)))
+                    {
+                        <tr>
+                            <td>@((currentPage - 1) * pageSize + index + 1)</td>
+                            <td>@commission.OrderDate.AddHours(1).ToString("g")</td>
+                            <td>@commission.InfluencerName</td>
+                            <td>
+                                @foreach (var productName in commission.ProductNames)
+                                {
+                                    <div>@productName</div>
+                                }
+                            </td>
+                            <td>FCFA @commission.TotalAmount.ToString("N0") XAF</td>
+                            <td>FCFA @commission.CommissionAmount.ToString("N0") XAF</td>
+                            <td>
+                                @if (commission.Status == "Pending")
+                                {
+                                    <button class="btn btn-mark-paid" @onclick="() => MarkAsPaid(commission.OrderId)">Mark as Paid</button>
+                                }
+                                else
+                                {
+                                    <span class="text-success">Paid</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center">No commissions found.</td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>
 
     <div class="pagination">
-        <button class="active">1</button>
-        <button>2</button>
-        <button>3</button>
-        <button>4</button>
-        <button>5</button>
-        <button>6</button>
-        <button>7</button>
-        <button>&raquo;</button>
+        @for (int i = 1; i <= totalPages; i++)
+        {
+            var pageNumber = i;
+            <button class="@(pageNumber == currentPage ? "active" : "")" @onclick="() => ChangePage(pageNumber)">@pageNumber</button>
+        }
     </div>
 
     <div class="summary-section">
         <h2 class="summary-title">Summary:</h2>
-        <p><strong>Total Commission Earned (All Influencer):</strong> 67, 500 XAF</p>
-        <p><strong>Total Paid:</strong> 7, 500 XAF</p>
-        <p><strong>Balance Remaining:</strong> 6, 000 XAF</p>
+        <p><strong>Total Commission Earned (All Influencers):</strong> FCFA @totalCommissionEarned.ToString("N0") XAF</p>
+        <p><strong>Total Paid:</strong> FCFA @totalCommissionPaid.ToString("N0") XAF</p>
+        <p><strong>Balance Remaining:</strong> FCFA @((totalCommissionEarned - totalCommissionPaid).ToString("N0")) XAF</p>
     </div>
 </div>
+
+@code {
+    private List<CommissionViewModel> allCommissions = new();
+    private List<CommissionViewModel> pagedCommissions = new();
+    private int currentPage = 1;
+    private int pageSize = 20;
+    private int totalPages;
+
+    private decimal totalCommissionEarned;
+    private decimal totalCommissionPaid;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCommissions();
+    }
+
+    private async Task LoadCommissions()
+    {
+        allCommissions.Clear();
+
+        // Get all orders that were made via a referral
+        var referredOrders = await DbContext.Orders
+            .Where(o => !string.IsNullOrEmpty(o.ReferralCode))
+            .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
+            .OrderByDescending(o => o.OrderDate)
+            .ToListAsync();
+
+        // Get all influencers
+        var influencers = await UserManager.GetUsersInRoleAsync("Influencer");
+
+        foreach (var order in referredOrders)
+        {
+            // Find the influencer who referred this order
+            var influencer = influencers.FirstOrDefault(i => i.ReferralCode == order.ReferralCode);
+
+            allCommissions.Add(new CommissionViewModel
+            {
+                OrderId = order.Id,
+                OrderDate = order.OrderDate,
+                InfluencerName = influencer?.FullName ?? "Unknown",
+                ProductNames = order.OrderItems.Select(oi => oi.Product.Name).ToList(),
+                TotalAmount = order.TotalAmount,
+                CommissionAmount = order.TotalAmount * 0.07m,
+                Status = order.Status
+            });
+        }
+
+        // Calculate summary
+        totalCommissionEarned = allCommissions.Sum(c => c.CommissionAmount);
+        totalCommissionPaid = allCommissions.Where(c => c.Status == "Paid").Sum(c => c.CommissionAmount);
+
+        totalPages = (int)Math.Ceiling(allCommissions.Count / (double)pageSize);
+        UpdatePagedCommissions();
+    }
+
+    private void UpdatePagedCommissions()
+    {
+        pagedCommissions = allCommissions
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+    }
+
+    private void ChangePage(int pageNumber)
+    {
+        if (pageNumber < 1 || pageNumber > totalPages) return;
+        currentPage = pageNumber;
+        UpdatePagedCommissions();
+    }
+
+    private async Task MarkAsPaid(int orderId)
+    {
+        var order = await DbContext.Orders.FindAsync(orderId);
+        if (order != null)
+        {
+            order.Status = "Paid";
+            await DbContext.SaveChangesAsync();
+
+            // Notify other components (like the influencer dashboard) that an order has changed
+            OrderStateService.NotifyOrderPlaced();
+
+            await LoadCommissions(); // Refresh the list
+        }
+    }
+
+    // A helper class to hold the combined data for the view
+    public class CommissionViewModel
+    {
+        public int OrderId { get; set; }
+        public DateTime OrderDate { get; set; }
+        public string InfluencerName { get; set; }
+        public List<string> ProductNames { get; set; } = new();
+        public decimal TotalAmount { get; set; }
+        public decimal CommissionAmount { get; set; }
+        public string Status { get; set; }
+    }
+}

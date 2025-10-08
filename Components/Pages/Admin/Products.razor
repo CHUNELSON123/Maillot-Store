@@ -2,10 +2,12 @@
 @using MaillotStore.Components.Layout
 @using MaillotStore.Models
 @using MaillotStore.Data
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @layout AdminLayout
 @inject ApplicationDbContext DbContext
 @inject NavigationManager NavigationManager
+ 
 
 <PageTitle>Products</PageTitle>
 
@@ -31,12 +33,12 @@
                 </tr>
             </thead>
             <tbody>
-                @if (products != null)
+                @if (pagedProducts != null && pagedProducts.Any())
                 {
-                    @foreach (var (product, index) in products.Select((p, i) => (p, i + 1)))
+                    @foreach (var (product, index) in pagedProducts.Select((p, i) => (p, i)))
                     {
                         <tr>
-                            <td>@index</td>
+                            <td>@((currentPage - 1) * pageSize + index + 1)</td>
                             <td>@TruncateName(product.Name, 30)</td>
                             <td>FCFA @product.Price.ToString("N0") XAF</td>
                             <td>@product.Stock</td>
@@ -47,17 +49,61 @@
                         </tr>
                     }
                 }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center">No products found.</td>
+                    </tr>
+                }
             </tbody>
         </table>
+    </div>
+
+    @* --- PAGINATION --- *@
+    <div class="pagination">
+        @for (int i = 1; i <= totalPages; i++)
+        {
+            var pageNumber = i;
+            <button class="@(pageNumber == currentPage ? "active" : "")" @onclick="() => ChangePage(pageNumber)">@pageNumber</button>
+        }
     </div>
 </div>
 
 @code {
-    private List<Product>? products;
+    private List<Product> allProducts = new();
+    private List<Product> pagedProducts = new();
+    private int currentPage = 1;
+    private int pageSize = 20;
+    private int totalPages;
 
     protected override async Task OnInitializedAsync()
     {
-        products = await DbContext.Products.ToListAsync();
+        await LoadProducts();
+    }
+
+    private async Task LoadProducts()
+    {
+        allProducts = await DbContext.Products.OrderBy(p => p.Name).ToListAsync();
+        totalPages = (int)Math.Ceiling(allProducts.Count / (double)pageSize);
+        UpdatePagedProducts();
+    }
+
+    private void UpdatePagedProducts()
+    {
+        pagedProducts = allProducts
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+    }
+
+    private void ChangePage(int pageNumber)
+    {
+        if (pageNumber < 1 || pageNumber > totalPages)
+        {
+            return;
+        }
+        currentPage = pageNumber;
+        UpdatePagedProducts();
     }
 
     private async Task DeleteProduct(int productId)
@@ -67,8 +113,7 @@
         {
             DbContext.Products.Remove(product);
             await DbContext.SaveChangesAsync();
-            products.Remove(product);
-            StateHasChanged();
+            await LoadProducts(); // Reload all products to refresh the list and pagination
         }
     }
 

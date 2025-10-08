@@ -13,5 +13,7 @@
         public string? ReferralCode { get; set; }
 
         public string Status { get; set; } = "Pending";
+        public bool IsVisibleToAdmin { get; set; } = true;      // <-- ADD THIS LINE
+        public bool IsVisibleToInfluencer { get; set; } = true; // <-- ADD THIS LINE
     }
 }

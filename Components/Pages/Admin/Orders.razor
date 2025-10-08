@@ -2,10 +2,12 @@
 @using MaillotStore.Components.Layout
 @using MaillotStore.Data
 @using MaillotStore.Models
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @layout AdminLayout
 @inject ApplicationDbContext DbContext
 @inject NavigationManager NavigationManager
+ 
 
 <PageTitle>Orders</PageTitle>
 
@@ -25,33 +27,96 @@
                 </tr>
             </thead>
             <tbody>
-                @if (orders != null)
+                @if (pagedOrders != null && pagedOrders.Any())
                 {
-                    @foreach (var order in orders)
+                    @foreach (var (order, index) in pagedOrders.Select((item, i) => (item, i)))
                     {
                         <tr>
-                            <td>@order.Id</td>
+                            <td>@((currentPage - 1) * pageSize + index + 1)</td>
                             <td>@order.CustomerName</td>
                             <td>@order.OrderItems.Count()</td>
                             <td>FCFA @order.TotalAmount.ToString("N0") XAF</td>
                             <td>
                                 <button class="btn btn-view" @onclick="() => ViewOrder(order.Id)">View</button>
+                                <button class="btn btn-danger" @onclick="() => DeleteOrder(order.Id)">Delete</button>
                             </td>
                         </tr>
                     }
                 }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center">No orders found.</td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>
-    @* Add your pagination logic here if needed *@
+
+    @* --- PAGINATION --- *@
+    <div class="pagination">
+        @for (int i = 1; i <= totalPages; i++)
+        {
+            var pageNumber = i;
+            <button class="@(pageNumber == currentPage ? "active" : "")" @onclick="() => ChangePage(pageNumber)">@pageNumber</button>
+        }
+    </div>
 </div>
 
 @code {
-    private List<Order> orders;
+    private List<Order> allOrders = new();
+    private List<Order> pagedOrders = new();
+    private int currentPage = 1;
+    private int pageSize = 20;
+    private int totalPages;
 
     protected override async Task OnInitializedAsync()
     {
-        orders = await DbContext.Orders.Include(o => o.OrderItems).ToListAsync();
+        await LoadOrders();
+    }
+
+    private async Task LoadOrders()
+    {
+        // --- THIS QUERY IS UPDATED ---
+        // It now only fetches orders that are visible to the admin.
+        allOrders = await DbContext.Orders
+            .Where(o => o.IsVisibleToAdmin)
+            .Include(o => o.OrderItems)
+            .OrderByDescending(o => o.OrderDate)
+            .ToListAsync();
+
+        totalPages = (int)Math.Ceiling(allOrders.Count / (double)pageSize);
+        UpdatePagedOrders();
+    }
+
+    private void UpdatePagedOrders()
+    {
+        pagedOrders = allOrders
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+    }
+
+    private void ChangePage(int pageNumber)
+    {
+        if (pageNumber < 1 || pageNumber > totalPages)
+        {
+            return;
+        }
+        currentPage = pageNumber;
+        UpdatePagedOrders();
+    }
+
+    private async Task DeleteOrder(int orderId)
+    {
+        // --- THIS METHOD IS UPDATED FOR SOFT DELETE ---
+        var orderToHide = await DbContext.Orders.FindAsync(orderId);
+        if (orderToHide != null)
+        {
+            orderToHide.IsVisibleToAdmin = false; // Set the flag to hide it
+            await DbContext.SaveChangesAsync();
+            await LoadOrders(); // Reload the list to reflect the change
+        }
     }
 
     private void ViewOrder(int orderId)

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MaillotStore.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251004210340_AddIsFeaturedToProduct")]
-    partial class AddIsFeaturedToProduct
+    [Migration("20251008201643_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -44,6 +44,12 @@ namespace MaillotStore.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("FullName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("JoinedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -66,6 +72,9 @@ namespace MaillotStore.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<string>("ReferralCode")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
@@ -90,6 +99,50 @@ namespace MaillotStore.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("MaillotStore.Models.Order", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CustomerAddress")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CustomerPhone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsVisibleToAdmin")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVisibleToInfluencer")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReferralCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Orders");
+                });
+
             modelBuilder.Entity("MaillotStore.Models.OrderItem", b =>
                 {
                     b.Property<int>("OrderItemId")
@@ -97,6 +150,12 @@ namespace MaillotStore.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderItemId"));
+
+                    b.Property<string>("CustomName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("CustomNumber")
+                        .HasColumnType("int");
 
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
@@ -110,7 +169,13 @@ namespace MaillotStore.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<string>("Size")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("OrderItemId");
+
+                    b.HasIndex("OrderId");
 
                     b.HasIndex("ProductId");
 
@@ -125,10 +190,19 @@ namespace MaillotStore.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductId"));
 
+                    b.Property<string>("Category")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUrl2")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUrl3")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsFeatured")
@@ -290,6 +364,12 @@ namespace MaillotStore.Migrations
 
             modelBuilder.Entity("MaillotStore.Models.OrderItem", b =>
                 {
+                    b.HasOne("MaillotStore.Models.Order", null)
+                        .WithMany("OrderItems")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("MaillotStore.Models.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
@@ -348,6 +428,11 @@ namespace MaillotStore.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("MaillotStore.Models.Order", b =>
+                {
+                    b.Navigation("OrderItems");
                 });
 #pragma warning restore 612, 618
         }

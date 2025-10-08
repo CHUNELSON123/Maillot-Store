@@ -18,9 +18,13 @@
         <a href="/admin/commissions" class="@GetNavLinkClass("/admin/commissions")">
             Commission
         </a>
-        <a href="/logout" class="nav-link">
-            Logout
-        </a>
+        
+        @* --- THIS SECTION IS UPDATED --- *@
+        <form action="/Account/Logout" method="post">
+            <AntiforgeryToken />
+            <input type="hidden" name="returnUrl" value="/" />
+            <button type="submit" class="nav-link btn btn-link">Logout</button>
+        </form>
     </nav>
 </div>
 

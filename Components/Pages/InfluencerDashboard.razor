@@ -66,10 +66,7 @@
                             {
                                 <tr>
                                     <td>@(index + 1)</td>
-
-                                    @* --- THIS LINE IS CORRECTED FOR YOUR TIMEZONE --- *@
                                     <td>@order.OrderDate.AddHours(1).ToString("g")</td>
-
                                     <td>@order.CustomerName</td>
                                     <td>
                                         @foreach (var item in order.OrderItems)
@@ -140,10 +137,12 @@ else
             var baseUri = NavigationManager.BaseUri;
             referralLink = $"{baseUri}?ref={currentUser.ReferralCode}";
 
+            // --- THIS QUERY IS UPDATED ---
+            // It now only fetches orders that are visible to the influencer.
             referredOrders = await DbContext.Orders
                 .AsNoTracking()
                 .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
-                .Where(o => o.ReferralCode == currentUser.ReferralCode)
+                .Where(o => o.ReferralCode == currentUser.ReferralCode && o.IsVisibleToInfluencer)
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
 
@@ -154,12 +153,13 @@ else
 
     private async Task DeleteOrder(int orderId)
     {
-        var orderToDelete = await DbContext.Orders.FindAsync(orderId);
-        if (orderToDelete != null)
+        // --- THIS METHOD IS UPDATED FOR SOFT DELETE ---
+        var orderToHide = await DbContext.Orders.FindAsync(orderId);
+        if (orderToHide != null)
         {
-            DbContext.Orders.Remove(orderToDelete);
+            orderToHide.IsVisibleToInfluencer = false; // Set the flag to hide it
             await DbContext.SaveChangesAsync();
-            await LoadSalesData();
+            await LoadSalesData(); // Reload the list to reflect the change
         }
     }
 

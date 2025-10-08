@@ -1,10 +1,19 @@
 ﻿@page "/admin/dashboard"
+@using MaillotStore.Data
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using System.Security.Claims
 @layout Components.Layout.AdminLayout
+@inject ApplicationDbContext DbContext
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+ 
 
 <PageTitle>Admin Dashboard</PageTitle>
 
 <div class="admin-dashboard-content">
-    <h1 class="welcome-message">Welcome, Kevin</h1>
+    <h1 class="welcome-message">Welcome, @adminName</h1>
 
     <h2 class="quick-stats-title">Quick Stats</h2>
 
@@ -15,7 +24,7 @@
                 <h3>Total Products</h3>
             </div>
             <div class="card-body">
-                <p>45</p>
+                <p>@stats.TotalProducts</p>
             </div>
         </div>
 
@@ -25,7 +34,7 @@
                 <h3>Total Orders</h3>
             </div>
             <div class="card-body">
-                <p>78</p>
+                <p>@stats.TotalOrders</p>
             </div>
         </div>
 
@@ -35,10 +44,38 @@
                 <h3>Active Influencers</h3>
             </div>
             <div class="card-body">
-                <p>12</p>
+                <p>@stats.ActiveInfluencers</p>
             </div>
         </div>
     </div>
 </div>
 
- 
+@code {
+    private DashboardStats stats = new();
+    private string adminName = "Admin";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Get the current logged-in user's name
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity is { IsAuthenticated: true })
+        {
+            var currentUser = await UserManager.GetUserAsync(user);
+            adminName = currentUser?.FullName ?? user.Identity.Name ?? "Admin";
+        }
+
+        // Load the stats
+        stats.TotalProducts = await DbContext.Products.CountAsync();
+        stats.TotalOrders = await DbContext.Orders.CountAsync();
+        stats.ActiveInfluencers = (await UserManager.GetUsersInRoleAsync("Influencer")).Count;
+    }
+
+    // A helper class to hold the dashboard data
+    public class DashboardStats
+    {
+        public int TotalProducts { get; set; }
+        public int TotalOrders { get; set; }
+        public int ActiveInfluencers { get; set; }
+    }
+}
