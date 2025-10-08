@@ -1,4 +1,6 @@
 ﻿@page "/influencer-dashboard"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Influencer")]
 
 <PageTitle>Influencer Dashboard</PageTitle>
 
@@ -60,7 +62,8 @@
             </table>
         </div>
     </div>
-
+    <br />
+    <br />
     @* --- PERFORMANCE SUMMARY SECTION --- *@
     <div class="performance-summary">
         <h2>Your Performance:</h2>

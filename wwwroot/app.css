@@ -1024,7 +1024,8 @@ textarea.form-control {
 .sales-table {
     width: 100%;
     border-collapse: collapse; /* Removes default gaps between cells */
-    margin-bottom: 3rem;
+    margin: 0px;
+    ma
 }
 
     .sales-table th, .sales-table td {
@@ -1036,6 +1037,9 @@ textarea.form-control {
 
     .sales-table th {
         font-weight: bold;
+    }
+    .sales-table thead th {
+        border: 1px solid #fff;
     }
 
 /* Performance summary section */

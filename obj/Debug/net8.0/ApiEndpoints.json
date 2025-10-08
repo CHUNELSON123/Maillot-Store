@@ -6,13 +6,7 @@
     "HttpMethod": "POST",
     "IsController": false,
     "Order": 0,
-    "Parameters": [
-      {
-        "Name": "returnUrl",
-        "Type": "System.String",
-        "IsRequired": true
-      }
-    ],
+    "Parameters": [],
     "ReturnTypes": [
       {
         "Type": "System.Void",

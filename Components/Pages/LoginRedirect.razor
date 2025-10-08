@@ -1,0 +1,13 @@
+﻿@page "/login-redirect"
+@inject NavigationManager NavigationManager
+
+<p>Please wait, redirecting...</p>
+
+@code {
+    protected override void OnInitialized()
+    {
+        // By the time we get here, the user's auth state is fully loaded.
+        // Now we can safely navigate to the protected dashboard page.
+        NavigationManager.NavigateTo("/influencer-dashboard");
+    }
+}

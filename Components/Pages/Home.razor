@@ -39,7 +39,48 @@
     }
 </section>
 
-@* Other sections remain the same... *@
+
+@* --- WHY CHOOSE US SECTION --- *@
+<section class="why-choose-us container section-spacer">
+    <h2 class="text-center mb-4">Why Choose Us?</h2>
+    <div class="row justify-content-center g-4">
+        @* --- Card 1: Authenticity --- *@
+        <div class="col-6 col-lg-4">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-check-circle"></i></div>
+                <h3>Authenticity Guaranteed</h3>
+                <p>Original quality guaranteed from official suppliers.</p>
+            </div>
+        </div>
+
+        @* --- Card 2: Fast Delivery --- *@
+        <div class="col-6 col-lg-4">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-shipping-fast"></i></div>
+                <h3>Fast & Reliable Delivery</h3>
+                <p>Get your jersey delivered quickly and reliable, no matter where you are.</p>
+            </div>
+        </div>
+
+        @* --- Card 3: Easy Ordering --- *@
+        <div class="col-6 col-lg-4">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-mouse-pointer"></i></div>
+                <h3>Easy Ordering Process</h3>
+                <p> Our user-friendly platform makes ordering your favorite jerseys a breeze.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+@* --- BECOME AN INFLUENCER SECTION --- *@
+<section class="influencer-cta section-spacer">
+    <div class="container text-center">
+        <h2>Become an Influencer</h2>
+        <p class="lead"> Promote our jerseys, share your unique link, and earn commissions on every sale. Join the Maillot Store family today.</p>
+        <a href="/Account/Register" class="btn btn-lg cta-button-influencer">SignUp Now</a>
+    </div>
+</section>
 
 @code {
     private List<Product>? featuredProducts;
