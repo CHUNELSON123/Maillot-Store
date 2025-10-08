@@ -8,6 +8,8 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject ApplicationDbContext DbContext
+@inject ReferralService ReferralService
+@inject OrderStateService OrderStateService
 @implements IDisposable
 @rendermode InteractiveServer
 
@@ -134,12 +136,19 @@
             CustomerPhone = customerPhone,
             CustomerAddress = customerAddress,
             OrderDate = DateTime.UtcNow,
-            OrderItems = orderItems,
-            TotalAmount = Subtotal
+            Status = "Pending",
+            // --- THIS IS THE FIX ---
+            // Create a new list with a copy of the items
+            OrderItems = new List<OrderItem>(orderItems),
+            TotalAmount = Subtotal,
+            ReferralCode = ReferralService.GetReferralCode()
+
         };
 
         DbContext.Orders.Add(order);
         await DbContext.SaveChangesAsync();
+
+        OrderStateService.NotifyOrderPlaced();
 
         var messageBuilder = new StringBuilder();
         messageBuilder.AppendLine("Hello Maillot Store,");
@@ -167,7 +176,7 @@
             messageBuilder.AppendLine($" – FCFA {item.Price.ToString("N0")} XAF");
 
             string productUrl = $"{NavigationManager.BaseUri}product/{item.Product.ProductId}";
-            messageBuilder.AppendLine($"   Link: {productUrl}");
+            messageBuilder.AppendLine($"    Link: {productUrl}");
 
             itemNumber++;
         }
@@ -180,7 +189,6 @@
         string whatsappMessage = Uri.EscapeDataString(messageBuilder.ToString());
         string whatsappUrl = $"https://wa.me/237671007313?text={whatsappMessage}";
 
-        // *** CORRECTED: Fixed the typo in the method name ***
         await JSRuntime.InvokeVoidAsync("open", whatsappUrl, "_blank");
 
         CartService.ClearCart();

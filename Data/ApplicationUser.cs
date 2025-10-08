@@ -7,6 +7,8 @@ namespace MaillotStore.Data
     {
         public string? FullName { get; set; }
         public string? PhoneNumber { get; set; }
+
+        public string? ReferralCode { get; set; }
     }
 
 }

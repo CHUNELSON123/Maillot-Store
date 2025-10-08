@@ -16,6 +16,8 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+builder.Services.AddHttpContextAccessor(); // Needed for the service to access cookies
+builder.Services.AddScoped<ReferralService>();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -39,6 +41,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 builder.Services.AddScoped<MaillotStore.Services.ICartService, MaillotStore.Services.CartService>();
 builder.Services.AddSingleton<SearchStateService>();
+builder.Services.AddSingleton<OrderStateService>();
 
 var app = builder.Build();
 

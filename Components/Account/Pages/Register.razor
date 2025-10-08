@@ -118,6 +118,13 @@
         user.FullName = Input.FullName;
         user.PhoneNumber = Input.PhoneNumber;
 
+        // --- Generate Referral Code ---
+        // Takes the first 4 letters of the name and adds a random 3-digit number.
+        var namePart = new string(Input.FullName.Where(char.IsLetter).ToArray()).ToUpper();
+        namePart = namePart.Length > 4 ? namePart.Substring(0, 4) : namePart;
+        var numberPart = new Random().Next(100, 1000).ToString();
+        user.ReferralCode = $"{namePart}{numberPart}";
+
         await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
         var result = await UserManager.CreateAsync(user, Input.Password);
 

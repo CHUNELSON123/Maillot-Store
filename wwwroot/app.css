@@ -1048,4 +1048,100 @@ textarea.form-control {
     margin: 0.5rem 0;
 }
 
- 
+/*Product share button*/
+.product-image-container {
+    position: relative; /* This is crucial */
+}
+
+.product-share-icon-button {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    z-index: 10;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .product-share-icon-button:hover {
+        background-color: #007bff;
+    }
+
+.share-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.share-modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    color: #333;
+}
+
+    .share-modal-content h4 {
+        margin-bottom: 1.5rem;
+    }
+
+.share-options {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+}
+
+.share-icon {
+    font-size: 24px;
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: transform 0.2s;
+}
+
+    .share-icon:hover {
+        transform: scale(1.1);
+    }
+
+    .share-icon.facebook {
+        background-color: #1877F2;
+    }
+
+    .share-icon.whatsapp {
+        background-color: #25D366;
+    }
+
+    .share-icon.instagram {
+        background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+    }
+
+    .share-icon.tiktok {
+        background-color: #000000;
+    }
+
+.copy-message {
+    margin-top: 1rem;
+    color: #007bff;
+    font-size: 0.9rem;
+}

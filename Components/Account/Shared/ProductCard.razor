@@ -1,19 +1,28 @@
 ﻿@using MaillotStore.Models
 @using MaillotStore.Services
+@using MaillotStore.Components.Shared
 @inject ICartService CartService
 @inject NavigationManager NavigationManager
 
 <div class="product-card">
-    @* Make the image a clickable link *@
-    <a href="/product/@Product.ProductId">
-        <img src="@Product.ImageUrl" class="card-img-top" alt="@Product.Name">
-    </a>
+    <div class="product-image-container">
+        <a href="/product/@Product.ProductId">
+            <img src="@Product.ImageUrl" class="card-img-top" alt="@Product.Name">
+        </a>
+
+        <AuthorizeView Roles="Influencer">
+            @* This button now opens the modal *@
+            <button @onclick="ToggleShareModal" class="product-share-icon-button">
+                <i class="fas fa-share-alt"></i>
+            </button>
+        </AuthorizeView>
+    </div>
+
     <div class="card-body">
         <h5 class="card-title">@Product.Name</h5>
         <p class="card-price">@($"FCFA {Product.Price:N0} XAF")</p>
         <p class="card-season">@Product.Season</p>
         <div class="d-grid gap-2">
-            @* Make the "View Details" button a working link *@
             <a href="/product/@Product.ProductId" class="btn btn-product-action">
                 <i class="fas fa-eye me-2"></i> View Details
             </a>
@@ -24,14 +33,24 @@
     </div>
 </div>
 
+@* --- RENDER THE MODAL (IT'S HIDDEN BY DEFAULT) --- *@
+<ShareModal Product="Product" IsVisible="isShareModalVisible" OnClose="ToggleShareModal" />
+
+
 @code {
     [Parameter]
     public Product Product { get; set; } = new();
 
+    private bool isShareModalVisible = false;
+
+    private void ToggleShareModal()
+    {
+        isShareModalVisible = !isShareModalVisible;
+    }
+
     private void AddToCartAndNavigate(Product product)
     {
-        // --- Corrected the method call with default values ---
-        var defaultSize = product.Sizes?.Split(',').FirstOrDefault()?.Trim() ?? "M"; // Default to "M" if no sizes are specified
+        var defaultSize = product.Sizes?.Split(',').FirstOrDefault()?.Trim() ?? "M";
         CartService.AddToCart(product, 1, defaultSize, null, null);
         NavigationManager.NavigateTo("/checkout");
     }

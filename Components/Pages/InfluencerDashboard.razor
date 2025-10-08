@@ -1,79 +1,175 @@
 ﻿@page "/influencer-dashboard"
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using MaillotStore.Data
+@using MaillotStore.Models
+@using MaillotStore.Services
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject ApplicationDbContext DbContext
+@inject OrderStateService OrderStateService
+@implements IDisposable
 @attribute [Authorize(Roles = "Influencer")]
 
 <PageTitle>Influencer Dashboard</PageTitle>
 
-<div class="dashboard-container">
-    @* --- WELCOME HEADER --- *@
-    <div class="welcome-header">
-        <h1>WELCOME, Beh Chu</h1>
-    </div>
+@if (currentUser is not null)
+{
+    <div class="dashboard-container">
+        @* --- WELCOME HEADER --- *@
+        <div class="welcome-header">
+            <h1>WELCOME, @currentUser.FullName?.ToUpper()</h1>
+        </div>
 
-    @* --- REFERRAL LINK SECTION --- *@
-    <div class="referral-info">
-        <p>Referral Code: BEHCHU123</p>
-        <p>Referral Link: https://maillotstore.com/?ref=BEHCHU123</p>
-        <a href="#" class="copy-link">Copy Link</a>
-        <div class="share-links">
-            <span>Share Link Via</span>
-            <a href="#" class="social-icon"><i class="fab fa-whatsapp"></i></a>
-            <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+        @* --- REFERRAL LINK SECTION (Unchanged) --- *@
+        <div class="referral-info">
+            <p>Referral Code: @currentUser.ReferralCode</p>
+            <p>Referral Link: @referralLink</p>
+            <button @onclick="CopyReferralLink" class="copy-link">Copy Link</button>
+            <div class="share-links">
+                <span>Share Link Via</span>
+                <a href="@($"https://wa.me/?text={System.Net.WebUtility.UrlEncode(referralLink)}")" target="_blank" class="social-icon"><i class="fab fa-whatsapp"></i></a>
+                <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+
+        @* --- SALES TABLE SECTION --- *@
+        <div class="sales-section">
+            <h2>Your Sales via Referral Link</h2>
+            <div class="table-responsive">
+                <table class="sales-table">
+                    <thead>
+                        <tr>
+                            <th>S/N</th>
+                            <th>Date and Time</th>
+                            <th>Customer Name</th>
+                            <th>Product(s)</th>
+                            <th>Amount</th>
+                            <th>Commission</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!referredOrders.Any())
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center">No sales recorded yet.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var (order, index) in referredOrders.Select((item, index) => (item, index)))
+                            {
+                                <tr>
+                                    <td>@(index + 1)</td>
+
+                                    @* --- THIS LINE IS CORRECTED FOR YOUR TIMEZONE --- *@
+                                    <td>@order.OrderDate.AddHours(1).ToString("g")</td>
+
+                                    <td>@order.CustomerName</td>
+                                    <td>
+                                        @foreach (var item in order.OrderItems)
+                                        {
+                                            <div>@item.Product.Name</div>
+                                        }
+                                    </td>
+                                    <td>FCFA @order.TotalAmount.ToString("N0") XAF</td>
+                                    <td>FCFA @((order.TotalAmount * 0.07m).ToString("N0")) XAF</td>
+                                    <td>@(string.IsNullOrEmpty(order.Status) ? "Pending" : order.Status)</td>
+                                    <td>
+                                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteOrder(order.Id)">Delete</button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <br />
+        <br />
+        @* --- PERFORMANCE SUMMARY SECTION (Unchanged) --- *@
+        <div class="performance-summary">
+            <h2>Your Performance:</h2>
+            <p>Total Sales: @referredOrders.Count</p>
+            <p>Commission Earned: FCFA @totalCommission.ToString("N0") XAF</p>
+            <p>Commission Paid: FCFA @paidCommission.ToString("N0") XAF</p>
+            <p>Balance Remaining: FCFA @((totalCommission - paidCommission).ToString("N0")) XAF</p>
         </div>
     </div>
+}
+else
+{
+    <p>Loading user data...</p>
+}
 
-    @* --- SALES TABLE SECTION --- *@
-    <div class="sales-section">
-        <h2>Your Sales via Referral Link</h2>
-        <div class="table-responsive">
-            <table class="sales-table">
-                <thead>
-                    <tr>
-                        <th>S/N</th>
-                        <th>Date and Time</th>
-                        <th>Customer Name</th>
-                        <th>Product</th>
-                        <th>Amount</th>
-                        <th>Commission</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @* --- Table rows will be added here later --- *@
-                    <tr>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                    </tr>
-                    <tr>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <br />
-    <br />
-    @* --- PERFORMANCE SUMMARY SECTION --- *@
-    <div class="performance-summary">
-        <h2>Your Performance:</h2>
-        <p>Total Sale: 12</p>
-        <p>Commission Earned: 7,500</p>
-        <p>Commission Paid: 5,500</p>
-        <p>Balance Remaining: 2,000</p>
-    </div>
-</div>
+@code {
+    private ApplicationUser? currentUser;
+    private string referralLink = string.Empty;
+    private List<Order> referredOrders = new();
+    private decimal totalCommission = 0;
+    private decimal paidCommission = 0;
 
-@* Font Awesome CDN for social icons *@
-@* Add this to your App.razor or main index.html if not already present *@
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    protected override async Task OnInitializedAsync()
+    {
+        OrderStateService.OnOrderPlaced += RefreshDashboardData;
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity is { IsAuthenticated: true })
+        {
+            currentUser = await UserManager.GetUserAsync(user);
+            await LoadSalesData();
+        }
+    }
+
+    private async void RefreshDashboardData()
+    {
+        await LoadSalesData();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadSalesData()
+    {
+        if (currentUser?.ReferralCode is not null)
+        {
+            var baseUri = NavigationManager.BaseUri;
+            referralLink = $"{baseUri}?ref={currentUser.ReferralCode}";
+
+            referredOrders = await DbContext.Orders
+                .AsNoTracking()
+                .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
+                .Where(o => o.ReferralCode == currentUser.ReferralCode)
+                .OrderByDescending(o => o.OrderDate)
+                .ToListAsync();
+
+            totalCommission = referredOrders.Sum(o => o.TotalAmount * 0.07m);
+            paidCommission = referredOrders.Where(o => o.Status == "Paid").Sum(o => o.TotalAmount * 0.07m);
+        }
+    }
+
+    private async Task DeleteOrder(int orderId)
+    {
+        var orderToDelete = await DbContext.Orders.FindAsync(orderId);
+        if (orderToDelete != null)
+        {
+            DbContext.Orders.Remove(orderToDelete);
+            await DbContext.SaveChangesAsync();
+            await LoadSalesData();
+        }
+    }
+
+    private async Task CopyReferralLink()
+    {
+        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralLink);
+    }
+
+    public void Dispose()
+    {
+        OrderStateService.OnOrderPlaced -= RefreshDashboardData;
+    }
+}

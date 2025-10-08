@@ -8,6 +8,18 @@
 @inject NavigationManager NavigationManager
 @inject ICartService CartService
 
+@* --- THIS NEW SECTION ADDS THE TAGS FOR SHARING --- *@
+<HeadContent>
+    @if (product is not null)
+    {
+        <meta property="og:title" content="@product.Name" />
+        <meta property="og:description" content="@(product.Description ?? "Check out this amazing jersey!")" />
+        <meta property="og:image" content="@(NavigationManager.ToAbsoluteUri(product.ImageUrl ?? ""))" />
+        <meta property="og:url" content="@(NavigationManager.Uri)" />
+        <meta property="og:type" content="website" />
+    }
+</HeadContent>
+
 <PageTitle>@product?.Name</PageTitle>
 
 <div class="container my-5">
