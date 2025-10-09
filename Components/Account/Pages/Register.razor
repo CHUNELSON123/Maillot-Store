@@ -136,7 +136,7 @@
             // --- Assign the "Influencer" role ---
             await UserManager.AddToRoleAsync(user, "Influencer");
 
-            NavigationManager.NavigateTo("/Account/Login");
+            NavigationManager.NavigateTo("/Account/Login", forceLoad: true);
         }
         else
         {
