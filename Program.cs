@@ -24,7 +24,7 @@ builder.Services.AddRazorComponents()
 
   .AddInteractiveServerComponents();
 
-
+builder.Services.AddSingleton<OrderStateService>();
 
 builder.Services.AddCascadingAuthenticationState();
 

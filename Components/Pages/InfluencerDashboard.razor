@@ -124,10 +124,15 @@ else
         }
     }
 
-    private async void RefreshDashboardData()
+    // --- THIS IS THE FIX ---
+    // This method is now non-async and uses InvokeAsync to guarantee the UI update.
+    private void RefreshDashboardData()
     {
-        await LoadSalesData();
-        await InvokeAsync(StateHasChanged);
+        InvokeAsync(async () =>
+        {
+            await LoadSalesData(); // Reload the data from the database
+            StateHasChanged();     // Tell Blazor to re-render the component
+        });
     }
 
     private async Task LoadSalesData()
@@ -137,12 +142,13 @@ else
             var baseUri = NavigationManager.BaseUri;
             referralLink = $"{baseUri}?ref={currentUser.ReferralCode}";
 
-            // --- THIS QUERY IS UPDATED ---
-            // It now only fetches orders that are visible to the influencer.
+            var influencerCode = currentUser.ReferralCode.Trim();
             referredOrders = await DbContext.Orders
                 .AsNoTracking()
                 .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
-                .Where(o => o.ReferralCode == currentUser.ReferralCode && o.IsVisibleToInfluencer)
+                .Where(o => o.ReferralCode != null &&
+                            o.ReferralCode.Trim().ToUpper() == influencerCode.ToUpper() &&
+                            o.IsVisibleToInfluencer)
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
 
@@ -153,13 +159,12 @@ else
 
     private async Task DeleteOrder(int orderId)
     {
-        // --- THIS METHOD IS UPDATED FOR SOFT DELETE ---
         var orderToHide = await DbContext.Orders.FindAsync(orderId);
         if (orderToHide != null)
         {
-            orderToHide.IsVisibleToInfluencer = false; // Set the flag to hide it
+            orderToHide.IsVisibleToInfluencer = false;
             await DbContext.SaveChangesAsync();
-            await LoadSalesData(); // Reload the list to reflect the change
+            await LoadSalesData();
         }
     }
 

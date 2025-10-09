@@ -13,6 +13,7 @@
 @implements IDisposable
 @rendermode InteractiveServer
 
+
 <PageTitle>Checkout</PageTitle>
 
 <div class="container my-5">
@@ -136,18 +137,15 @@
             CustomerPhone = customerPhone,
             CustomerAddress = customerAddress,
             OrderDate = DateTime.UtcNow,
-            Status = "Pending",
             // --- THIS IS THE FIX ---
             // Create a new list with a copy of the items
             OrderItems = new List<OrderItem>(orderItems),
             TotalAmount = Subtotal,
             ReferralCode = ReferralService.GetReferralCode()
-
         };
 
         DbContext.Orders.Add(order);
         await DbContext.SaveChangesAsync();
-
         OrderStateService.NotifyOrderPlaced();
 
         var messageBuilder = new StringBuilder();
