@@ -33,5 +33,17 @@ namespace MaillotStore.Services
         {
             return _httpContextAccessor.HttpContext?.Request.Cookies[ReferralCookieKey];
         }
+
+        // --- START: Added Missing Method ---
+        /// <summary>
+        /// Checks if a referral cookie exists for the current user.
+        /// </summary>
+        /// <returns>True if the referral cookie is present, otherwise false.</returns>
+        public bool IsReferred()
+        {
+            // Return true if the browser's request contains a cookie with our specific key
+            return _httpContextAccessor.HttpContext?.Request.Cookies.ContainsKey(ReferralCookieKey) ?? false;
+        }
+        // --- END: Added Missing Method ---
     }
 }

@@ -1,5 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @inject MaillotStore.Services.SearchStateService SearchState
+@inject MaillotStore.Services.ReferralService ReferralService
 @inject NavigationManager NavManager
 
 <header>
@@ -26,28 +27,32 @@
                     <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
                     <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
                     <li class="nav-item"><a class="nav-link" href="/checkout">Checkout</a></li>
-                    
+
                     <AuthorizeView>
                         <Authorized>
-                             @if (context.User.IsInRole("Influencer"))
-                             {
+                            @if (context.User.IsInRole("Influencer"))
+                            {
                                 <li class="nav-item"><a class="nav-link" href="/influencer-dashboard">Dashboard</a></li>
-                             }
-                             else if (context.User.IsInRole("Admin"))
-                             {
+                            }
+                            else if (context.User.IsInRole("Admin"))
+                            {
                                 <li class="nav-item"><a class="nav-link" href="/admin/dashboard">Dashboard</a></li>
-                             }
+                            }
 
-                             <li class="nav-item">
-                                <form action="/Account/Logout" method="post">
-                                    <AntiforgeryToken />
-                                    <input type="hidden" name="returnUrl" value="/" />
-                                    <button type="submit" class="nav-link btn btn-link">Logout</button>
-                                </form>
-                            </li>
+                            @* --- 1. HIDE LOGOUT FOR ADMIN & INFLUENCER (DESKTOP) --- *@
+                            @if (!context.User.IsInRole("Admin") && !context.User.IsInRole("Influencer"))
+                            {
+                                <li class="nav-item">
+                                    <form action="/Account/Logout" method="post">
+                                        <AntiforgeryToken />
+                                        <input type="hidden" name="returnUrl" value="/" />
+                                        <button type="submit" class="nav-link btn btn-link">Logout</button>
+                                    </form>
+                                </li>
+                            }
                         </Authorized>
                         <NotAuthorized>
-                            <li class="nav-item"><a class="nav-link" href="/Account/Login">Login</a></li>
+                            @* Your existing NotAuthorized content *@
                         </NotAuthorized>
                     </AuthorizeView>
                 </ul>
@@ -78,23 +83,31 @@
         <a class="nav-link" href="/checkout">Checkout</a>
 
         <AuthorizeView>
-             <Authorized>
-                 @if (context.User.IsInRole("Influencer"))
-                 {
+            <Authorized>
+                @if (context.User.IsInRole("Influencer"))
+                {
                     <a class="nav-link" href="/influencer-dashboard">Dashboard</a>
-                 }
-                 else if (context.User.IsInRole("Admin"))
-                 {
+                }
+                else if (context.User.IsInRole("Admin"))
+                {
                     <a class="nav-link" href="/admin/dashboard">Dashboard</a>
-                 }
-                <form action="/Account/Logout" method="post" class="w-100">
-                    <AntiforgeryToken />
-                    <input type="hidden" name="returnUrl" value="/" />
-                    <button type="submit" class="nav-link btn btn-link text-start w-100">Logout</button>
-                </form>
+                }
+
+                @* --- 2. HIDE LOGOUT FOR ADMIN & INFLUENCER (MOBILE) --- *@
+                @if (!context.User.IsInRole("Admin") && !context.User.IsInRole("Influencer"))
+                {
+                    <form action="/Account/Logout" method="post" class="w-100">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="returnUrl" value="/" />
+                        <button type="submit" class="nav-link btn btn-link text-start w-100">Logout</button>
+                    </form>
+                }
             </Authorized>
             <NotAuthorized>
-                <a class="nav-link" href="/Account/Login">Login</a>
+                @if (!isReferred)
+                {
+                    <a class="nav-link" href="/Account/Login">Login</a>
+                }
             </NotAuthorized>
         </AuthorizeView>
     </div>
@@ -108,8 +121,14 @@
 @code {
     private bool collapseNavMenu = true;
     private string searchTerm = string.Empty;
+    private bool isReferred;
 
     private string NavMenuCssClass => collapseNavMenu ? "sidenav" : "sidenav open";
+
+    protected override void OnInitialized()
+    {
+        isReferred = ReferralService.IsReferred();
+    }
 
     private void ToggleNavMenu()
     {

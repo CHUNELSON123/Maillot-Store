@@ -9,7 +9,7 @@
 @inject ApplicationDbContext DbContext
 @inject UserManager<ApplicationUser> UserManager
 @inject Services.OrderStateService OrderStateService
- 
+@attribute [Authorize(Roles = "Admin")]
 
 <PageTitle>Commissions</PageTitle>
 

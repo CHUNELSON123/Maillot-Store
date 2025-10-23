@@ -16,6 +16,9 @@
 
 <PageTitle>Influencer Dashboard</PageTitle>
 
+@* --- ADD A STYLESHEET REFERENCE --- *@
+<link href="css/influencer-dashboard.css" rel="stylesheet" />
+
 @if (currentUser is not null)
 {
     <div class="dashboard-container">
@@ -36,10 +39,12 @@
             </div>
         </div>
 
-        @* --- SALES TABLE SECTION --- *@
+        @* --- START: UPDATED SALES SECTION FOR RESPONSIVENESS --- *@
         <div class="sales-section">
             <h2>Your Sales via Referral Link</h2>
-            <div class="table-responsive">
+
+            @* --- Desktop Table (Hidden on Mobile) --- *@
+            <div class="table-responsive d-none d-md-block">
                 <table class="sales-table">
                     <thead>
                         <tr>
@@ -86,9 +91,48 @@
                     </tbody>
                 </table>
             </div>
+
+            @* --- Mobile Cards (Visible only on Mobile) --- *@
+            <div class="d-md-none">
+                @if (!referredOrders.Any())
+                {
+                    <p class="text-center">No sales recorded yet.</p>
+                }
+                else
+                {
+                    @foreach (var (order, index) in referredOrders.Select((item, index) => (item, index)))
+                    {
+                        <div class="sale-card">
+                            <div class="card-header">
+                                <strong>Sale #@(index + 1)</strong>
+                                <span class="card-date">@order.OrderDate.AddHours(1).ToString("g")</span>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Customer:</strong> @order.CustomerName</p>
+                                <p><strong>Products:</strong></p>
+                                <ul class="product-list">
+                                    @foreach (var item in order.OrderItems)
+                                    {
+                                        <li>@item.Product.Name</li>
+                                    }
+                                </ul>
+                                <p><strong>Amount:</strong> FCFA @order.TotalAmount.ToString("N0") XAF</p>
+                                <p><strong>Commission:</strong> FCFA @((order.TotalAmount * 0.07m).ToString("N0")) XAF</p>
+                                <p><strong>Status:</strong> @(string.IsNullOrEmpty(order.Status) ? "Pending" : order.Status)</p>
+                            </div>
+                            <div class="card-footer">
+                                <button class="btn btn-danger btn-sm" @onclick="() => DeleteOrder(order.Id)">Delete</button>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
         </div>
+        @* --- END: UPDATED SALES SECTION --- *@
+
         <br />
         <br />
+
         @* --- PERFORMANCE SUMMARY SECTION (Unchanged) --- *@
         <div class="performance-summary">
             <h2>Your Performance:</h2>
@@ -103,6 +147,7 @@ else
 {
     <p>Loading user data...</p>
 }
+
 
 @code {
     private ApplicationUser? currentUser;
@@ -124,14 +169,12 @@ else
         }
     }
 
-    // --- THIS IS THE FIX ---
-    // This method is now non-async and uses InvokeAsync to guarantee the UI update.
     private void RefreshDashboardData()
     {
         InvokeAsync(async () =>
         {
-            await LoadSalesData(); // Reload the data from the database
-            StateHasChanged();     // Tell Blazor to re-render the component
+            await LoadSalesData();
+            StateHasChanged();
         });
     }
 

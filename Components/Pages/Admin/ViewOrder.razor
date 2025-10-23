@@ -7,7 +7,7 @@
 @layout AdminLayout
 @inject ApplicationDbContext DbContext
 @inject NavigationManager NavigationManager
- 
+@attribute [Authorize(Roles = "Admin")]
 
 <PageTitle>Order Details</PageTitle>
 

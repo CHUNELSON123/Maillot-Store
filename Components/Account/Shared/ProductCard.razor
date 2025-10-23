@@ -1,7 +1,7 @@
 ﻿@using MaillotStore.Models
 @using MaillotStore.Services
 @using MaillotStore.Components.Shared
-@inject ICartService CartService
+@inject StateContainer StateContainer
 @inject NavigationManager NavigationManager
 
 <div class="product-card">
@@ -11,7 +11,6 @@
         </a>
 
         <AuthorizeView Roles="Influencer">
-            @* This button now opens the modal *@
             <button @onclick="ToggleShareModal" class="product-share-icon-button">
                 <i class="fas fa-share-alt"></i>
             </button>
@@ -33,7 +32,6 @@
     </div>
 </div>
 
-@* --- RENDER THE MODAL (IT'S HIDDEN BY DEFAULT) --- *@
 <ShareModal Product="Product" IsVisible="isShareModalVisible" OnClose="ToggleShareModal" />
 
 
@@ -48,10 +46,10 @@
         isShareModalVisible = !isShareModalVisible;
     }
 
-    private void AddToCartAndNavigate(Product product)
+    private async Task AddToCartAndNavigate(Product product)
     {
         var defaultSize = product.Sizes?.Split(',').FirstOrDefault()?.Trim() ?? "M";
-        CartService.AddToCart(product, 1, defaultSize, null, null);
+        await StateContainer.AddToCart(product, 1, defaultSize, null, null);
         NavigationManager.NavigateTo("/checkout");
     }
 }

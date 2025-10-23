@@ -4,7 +4,7 @@
 @using MaillotStore.Services
 @using Microsoft.EntityFrameworkCore
 @using System.Text
-@inject ICartService CartService
+@inject StateContainer StateContainer
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject ApplicationDbContext DbContext
@@ -12,7 +12,6 @@
 @inject OrderStateService OrderStateService
 @implements IDisposable
 @rendermode InteractiveServer
-
 
 <PageTitle>Checkout</PageTitle>
 
@@ -118,17 +117,40 @@
     private string customerAddress;
     private string optionalMessage;
 
-    protected override void OnInitialized()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        orderItems = CartService.GetCartItems();
-        CartService.OnChange += StateHasChanged;
+        if (firstRender)
+        {
+            await StateContainer.LoadState();
+            orderItems = StateContainer.CartItems;
+            StateContainer.OnChange += StateHasChanged;
+            StateHasChanged();
+        }
     }
 
     private async Task CheckoutViaWhatsApp()
     {
-        if (!orderItems.Any() || string.IsNullOrWhiteSpace(customerName) || string.IsNullOrWhiteSpace(customerPhone))
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to place this order?");
+        if (!confirmed) return;
+
+        if (!orderItems.Any() || string.IsNullOrWhiteSpace(customerName) || string.IsNullOrWhiteSpace(customerPhone)) return;
+
+        var orderItemsForDb = new List<OrderItem>();
+        foreach (var item in orderItems)
         {
-            return;
+            var productFromDb = await DbContext.Products.FindAsync(item.Product.ProductId);
+            if (productFromDb != null)
+            {
+                orderItemsForDb.Add(new OrderItem
+                {
+                    Product = productFromDb,
+                    Quantity = item.Quantity,
+                    Price = item.Price,
+                    Size = item.Size,
+                    CustomName = item.CustomName,
+                    CustomNumber = item.CustomNumber
+                });
+            }
         }
 
         var order = new Order
@@ -137,11 +159,10 @@
             CustomerPhone = customerPhone,
             CustomerAddress = customerAddress,
             OrderDate = DateTime.UtcNow,
-            // --- THIS IS THE FIX ---
-            // Create a new list with a copy of the items
-            OrderItems = new List<OrderItem>(orderItems),
+            OrderItems = orderItemsForDb,
             TotalAmount = Subtotal,
-            ReferralCode = ReferralService.GetReferralCode()
+            ReferralCode = ReferralService.GetReferralCode(),
+            Status = "Pending"
         };
 
         DbContext.Orders.Add(order);
@@ -174,7 +195,7 @@
             messageBuilder.AppendLine($" – FCFA {item.Price.ToString("N0")} XAF");
 
             string productUrl = $"{NavigationManager.BaseUri}product/{item.Product.ProductId}";
-            messageBuilder.AppendLine($"    Link: {productUrl}");
+            messageBuilder.AppendLine($"   Link: {productUrl}");
 
             itemNumber++;
         }
@@ -189,22 +210,23 @@
 
         await JSRuntime.InvokeVoidAsync("open", whatsappUrl, "_blank");
 
-        CartService.ClearCart();
-        NavigationManager.NavigateTo("/checkout");
+        await StateContainer.ClearCart();
+
+        NavigationManager.NavigateTo("/shop");
     }
 
-    private void RemoveFromCart(OrderItem item)
+    private async Task RemoveFromCart(OrderItem item)
     {
-        CartService.RemoveFromCart(item);
+        await StateContainer.RemoveFromCart(item);
     }
 
-    private void UpdateQuantity(OrderItem item, int quantity)
+    private async Task UpdateQuantity(OrderItem item, int quantity)
     {
-        CartService.UpdateQuantity(item, quantity);
+        await StateContainer.UpdateCartItemQuantity(item, quantity);
     }
 
     public void Dispose()
     {
-        CartService.OnChange -= StateHasChanged;
+        StateContainer.OnChange -= StateHasChanged;
     }
 }

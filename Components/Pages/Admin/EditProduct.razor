@@ -8,13 +8,13 @@
 @using Microsoft.EntityFrameworkCore
 @using System.ComponentModel.DataAnnotations
 @using MaillotStore.Models.ViewModels
-@using Microsoft.AspNetCore.Components.Forms  
+@using Microsoft.AspNetCore.Components.Forms
 @layout AdminLayout
 @inject ApplicationDbContext DbContext
 @inject NavigationManager NavigationManager
 @inject IWebHostEnvironment Environment
 @inject ILogger<EditProduct> Logger
- 
+@attribute [Authorize(Roles = "Admin")]
 
 <PageTitle>Edit Product</PageTitle>
 
@@ -89,18 +89,54 @@
                 <div class="form-group">
                     <label>Image URLs (Optional):</label>
                     <div class="input-row">
-                        <InputText placeholder="Image URL 1" class="form-control-dark" @bind-Value="productViewModel.ImageUrl1" />
-                        <InputText placeholder="Image URL 2" class="form-control-dark" @bind-Value="productViewModel.ImageUrl2" />
-                        <InputText placeholder="Image URL 3" class="form-control-dark" @bind-Value="productViewModel.ImageUrl3" />
+                        <div class="image-input-container">
+                            @if (!string.IsNullOrEmpty(imageUrlPreviews[0]))
+                            {
+                                <img src="@imageUrlPreviews[0]" class="inline-preview" />
+                            }
+                            <InputText placeholder="Image URL 1" class="form-control-dark" @bind-Value="productViewModel.ImageUrl1" @oninput="(e) => UpdateUrlPreview(e, 0)" />
+                        </div>
+                        <div class="image-input-container">
+                            @if (!string.IsNullOrEmpty(imageUrlPreviews[1]))
+                            {
+                                <img src="@imageUrlPreviews[1]" class="inline-preview" />
+                            }
+                            <InputText placeholder="Image URL 2" class="form-control-dark" @bind-Value="productViewModel.ImageUrl2" @oninput="(e) => UpdateUrlPreview(e, 1)" />
+                        </div>
+                        <div class="image-input-container">
+                            @if (!string.IsNullOrEmpty(imageUrlPreviews[2]))
+                            {
+                                <img src="@imageUrlPreviews[2]" class="inline-preview" />
+                            }
+                            <InputText placeholder="Image URL 3" class="form-control-dark" @bind-Value="productViewModel.ImageUrl3" @oninput="(e) => UpdateUrlPreview(e, 2)" />
+                        </div>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label>Or Upload Images From PC (Max 3):</label>
                     <div class="input-row">
-                        <InputFile OnChange="@(e => LoadFile(e, 0))" class="form-control-file" />
-                        <InputFile OnChange="@(e => LoadFile(e, 1))" class="form-control-file" />
-                        <InputFile OnChange="@(e => LoadFile(e, 2))" class="form-control-file" />
+                        <div class="image-input-container">
+                            @if (!string.IsNullOrEmpty(filePreviews[0]))
+                            {
+                                <img src="@filePreviews[0]" class="inline-preview" />
+                            }
+                            <InputFile OnChange="@(e => LoadFile(e, 0))" class="form-control-file" />
+                        </div>
+                        <div class="image-input-container">
+                            @if (!string.IsNullOrEmpty(filePreviews[1]))
+                            {
+                                <img src="@filePreviews[1]" class="inline-preview" />
+                            }
+                            <InputFile OnChange="@(e => LoadFile(e, 1))" class="form-control-file" />
+                        </div>
+                        <div class="image-input-container">
+                            @if (!string.IsNullOrEmpty(filePreviews[2]))
+                            {
+                                <img src="@filePreviews[2]" class="inline-preview" />
+                            }
+                            <InputFile OnChange="@(e => LoadFile(e, 2))" class="form-control-file" />
+                        </div>
                     </div>
                 </div>
 
@@ -134,12 +170,13 @@
     public int ProductId { get; set; }
 
     private ProductViewModel? productViewModel;
-    private List<IBrowserFile> loadedFiles = new();
+    private List<IBrowserFile> loadedFiles = new(new IBrowserFile[3]);
+    private string[] imageUrlPreviews = new string[3];
+    private string[] filePreviews = new string[3];
     private List<string> SeasonYears { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
-        // Populate the season years for the dropdown
         int startYear = 2014;
         int currentYear = DateTime.Now.Year;
         for (int year = startYear; year <= currentYear; year++)
@@ -148,12 +185,10 @@
         }
         SeasonYears.Reverse();
 
-        // Fetch the product from the database
         var product = await DbContext.Products.FindAsync(ProductId);
 
         if (product != null)
         {
-            // Map the database model to the view model
             productViewModel = new ProductViewModel
             {
                 Name = product.Name,
@@ -167,11 +202,15 @@
                 ImageUrl3 = product.ImageUrl3
             };
 
-            // Safely parse the Season string
+            // Pre-fill URL previews with existing images
+            imageUrlPreviews[0] = product.ImageUrl;
+            imageUrlPreviews[1] = product.ImageUrl2;
+            imageUrlPreviews[2] = product.ImageUrl3;
+
             if (!string.IsNullOrEmpty(product.Season) && product.Season.Contains(" (") && product.Season.EndsWith(")"))
             {
                 var parts = product.Season.Split(new[] { " (" }, StringSplitOptions.None);
-                if (parts.Length == 2) // Defensive check
+                if (parts.Length == 2)
                 {
                     productViewModel.SeasonType = parts[0];
                     productViewModel.SeasonYear = parts[1].TrimEnd(')');
@@ -180,13 +219,23 @@
         }
     }
 
-    private void LoadFile(InputFileChangeEventArgs e, int index)
+    private async Task LoadFile(InputFileChangeEventArgs e, int index)
     {
-        while (loadedFiles.Count <= index)
-        {
-            loadedFiles.Add(null!); // Add a placeholder
-        }
         loadedFiles[index] = e.File;
+        if (e.File != null)
+        {
+            var buffer = new byte[e.File.Size];
+            await e.File.OpenReadStream(maxAllowedSize: 1024 * 1024 * 5).ReadAsync(buffer); // Limit to 5MB
+            var base64Image = Convert.ToBase64String(buffer);
+            filePreviews[index] = $"data:{e.File.ContentType};base64,{base64Image}";
+            imageUrlPreviews[index] = string.Empty; // Clear URL preview if a file is uploaded
+        }
+    }
+
+    private void UpdateUrlPreview(ChangeEventArgs e, int index)
+    {
+        imageUrlPreviews[index] = e.Value.ToString();
+        filePreviews[index] = string.Empty; // Clear file preview if a URL is entered
     }
 
     private async Task HandleUpdateSubmit()
@@ -194,10 +243,9 @@
         var productToUpdate = await DbContext.Products.FindAsync(ProductId);
         if (productToUpdate == null || productViewModel == null)
         {
-            return; // Exit if the product doesn't exist
+            return;
         }
 
-        // Update properties from the view model
         productToUpdate.Name = productViewModel.Name;
         productToUpdate.Price = productViewModel.Price;
         productToUpdate.Category = productViewModel.Category;
@@ -206,35 +254,22 @@
         productToUpdate.IsFeatured = productViewModel.IsFeatured;
         productToUpdate.Season = $"{productViewModel.SeasonType} ({productViewModel.SeasonYear})";
 
-        // Handle file uploads
-        var uploadedImageUrls = new List<string>();
-        foreach (var file in loadedFiles.Where(f => f != null))
+        var uploadedImageUrls = new List<string>(new string[3]);
+        for (int i = 0; i < loadedFiles.Count; i++)
         {
-            var path = Path.Combine(Environment.WebRootPath, "Images", "products", file.Name);
-            var directoryPath = Path.GetDirectoryName(path);
-            if (directoryPath != null)
+            var file = loadedFiles[i];
+            if (file != null)
             {
-                Directory.CreateDirectory(directoryPath);
+                var path = Path.Combine(Environment.WebRootPath, "Images", "products", file.Name);
+                await using FileStream fs = new(path, FileMode.Create);
+                await file.OpenReadStream(file.Size).CopyToAsync(fs);
+                uploadedImageUrls[i] = $"/Images/products/{file.Name}";
             }
-
-            await using FileStream fs = new(path, FileMode.Create);
-            await file.OpenReadStream(file.Size).CopyToAsync(fs);
-            uploadedImageUrls.Add($"/Images/products/{file.Name}");
         }
 
-        // Update image URLs, prioritizing newly uploaded files over existing URLs
-        if (uploadedImageUrls.Any())
-        {
-            productToUpdate.ImageUrl = uploadedImageUrls.ElementAtOrDefault(0);
-            productToUpdate.ImageUrl2 = uploadedImageUrls.ElementAtOrDefault(1);
-            productToUpdate.ImageUrl3 = uploadedImageUrls.ElementAtOrDefault(2);
-        }
-        else
-        {
-            productToUpdate.ImageUrl = productViewModel.ImageUrl1;
-            productToUpdate.ImageUrl2 = productViewModel.ImageUrl2;
-            productToUpdate.ImageUrl3 = productViewModel.ImageUrl3;
-        }
+        productToUpdate.ImageUrl = !string.IsNullOrEmpty(uploadedImageUrls[0]) ? uploadedImageUrls[0] : productViewModel.ImageUrl1;
+        productToUpdate.ImageUrl2 = !string.IsNullOrEmpty(uploadedImageUrls[1]) ? uploadedImageUrls[1] : productViewModel.ImageUrl2;
+        productToUpdate.ImageUrl3 = !string.IsNullOrEmpty(uploadedImageUrls[2]) ? uploadedImageUrls[2] : productViewModel.ImageUrl3;
 
         await DbContext.SaveChangesAsync();
         NavigationManager.NavigateTo("/admin/products");

@@ -8,7 +8,7 @@
 @inject ApplicationDbContext DbContext
 @inject NavigationManager NavigationManager
 @layout AdminLayout
- 
+@attribute [Authorize(Roles = "Admin")]
 
 <PageTitle>Influencers</PageTitle>
 

@@ -24,6 +24,8 @@ builder.Services.AddRazorComponents()
 
   .AddInteractiveServerComponents();
 
+
+
 builder.Services.AddSingleton<OrderStateService>();
 
 builder.Services.AddCascadingAuthenticationState();
@@ -81,7 +83,7 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
 builder.Services.AddScoped<MaillotStore.Services.ICartService, MaillotStore.Services.CartService>();
-
+builder.Services.AddScoped<StateContainer>();
 builder.Services.AddSingleton<SearchStateService>();
 
 builder.Services.AddSingleton<OrderStateService>();
@@ -165,4 +167,3 @@ app.MapAdditionalIdentityEndpoints();
 
 
 app.Run();
-

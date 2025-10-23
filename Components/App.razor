@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="css/view-order.css" />
     <link rel="stylesheet" href="css/viewinfluencer.css" />
     <link rel="stylesheet" href="css/commissions.css" />
+
     <link rel="stylesheet" href="MaillotStore.styles.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
@@ -28,26 +29,41 @@
 <body>
     <Routes @rendermode="RenderModeForPage" />
     <script src="_framework/blazor.web.js"></script>
+
+    @* --- THIS SCRIPT FIXES THE LOGIN NAVIGATION ISSUE --- *@
+    <script>
+        document.addEventListener('click', function (event) {
+            const anchor = event.target.closest('a');
+            if (anchor && anchor.hasAttribute('href')) {
+                const href = anchor.getAttribute('href');
+                if (href.startsWith('Account/')) {
+                    event.preventDefault();
+                    location.href = href;
+                }
+            }
+        });
+    </script>
+
 </body>
 
 @code {
-    [CascadingParameter]
-    private HttpContext? HttpContext { get; set; }
+        [CascadingParameter]
+        private HttpContext? HttpContext { get; set; }
 
-    private IComponentRenderMode? RenderModeForPage =>
-        (HttpContext?.Request.Path.StartsWithSegments("/Account") ?? false)
-        ? null
-        : Microsoft.AspNetCore.Components.Web.RenderMode.InteractiveServer;
+        private IComponentRenderMode? RenderModeForPage =>
+                (HttpContext?.Request.Path.StartsWithSegments("/Account") ?? false)
+                ? null
+                : Microsoft.AspNetCore.Components.Web.RenderMode.InteractiveServer;
 
-    protected override void OnInitialized()
-    {
-        var uri = new Uri(NavigationManager.Uri);
-        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
-        var refCode = query["ref"];
-        if (refCode is not null)
+        protected override void OnInitialized()
         {
-            ReferralService.SetReferralCodeFromQuery(refCode);
+                var uri = new Uri(NavigationManager.Uri);
+                var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+                var refCode = query["ref"];
+                if (refCode is not null)
+                {
+                        ReferralService.SetReferralCodeFromQuery(refCode);
+                }
         }
-    }
 }
 </html>

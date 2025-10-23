@@ -13,7 +13,7 @@
 @inject NavigationManager NavigationManager
 @inject IWebHostEnvironment Environment
 @inject ILogger<AddProduct> Logger
- 
+@attribute [Authorize(Roles = "Admin")]
 
 <PageTitle>Add Product</PageTitle>
 
@@ -82,18 +82,70 @@
             <div class="form-group">
                 <label>Image URLs (Optional):</label>
                 <div class="input-row">
-                    <InputText placeholder="Image URL 1" class="form-control-dark" @bind-Value="productViewModel.ImageUrl1" />
-                    <InputText placeholder="Image URL 2" class="form-control-dark" @bind-Value="productViewModel.ImageUrl2" />
-                    <InputText placeholder="Image URL 3" class="form-control-dark" @bind-Value="productViewModel.ImageUrl3" />
+                    @* --- START: PREVIEW AND INPUT FOR URL 1 --- *@
+                    <div class="image-input-container">
+                        @if (!string.IsNullOrEmpty(imageUrlPreviews[0]))
+                        {
+                            <img src="@imageUrlPreviews[0]" class="inline-preview" />
+                        }
+                        <InputText placeholder="Image URL 1" class="form-control-dark" @bind-Value="productViewModel.ImageUrl1" @oninput="(e) => UpdateUrlPreview(e, 0)" />
+                    </div>
+                    @* --- END: PREVIEW AND INPUT FOR URL 1 --- *@
+
+                    @* --- START: PREVIEW AND INPUT FOR URL 2 --- *@
+                    <div class="image-input-container">
+                        @if (!string.IsNullOrEmpty(imageUrlPreviews[1]))
+                        {
+                            <img src="@imageUrlPreviews[1]" class="inline-preview" />
+                        }
+                        <InputText placeholder="Image URL 2" class="form-control-dark" @bind-Value="productViewModel.ImageUrl2" @oninput="(e) => UpdateUrlPreview(e, 1)" />
+                    </div>
+                    @* --- END: PREVIEW AND INPUT FOR URL 2 --- *@
+
+                    @* --- START: PREVIEW AND INPUT FOR URL 3 --- *@
+                    <div class="image-input-container">
+                        @if (!string.IsNullOrEmpty(imageUrlPreviews[2]))
+                        {
+                            <img src="@imageUrlPreviews[2]" class="inline-preview" />
+                        }
+                        <InputText placeholder="Image URL 3" class="form-control-dark" @bind-Value="productViewModel.ImageUrl3" @oninput="(e) => UpdateUrlPreview(e, 2)" />
+                    </div>
+                    @* --- END: PREVIEW AND INPUT FOR URL 3 --- *@
                 </div>
             </div>
 
             <div class="form-group">
                 <label>Or Upload Images From PC (Max 3):</label>
                 <div class="input-row">
-                    <InputFile OnChange="@(e => LoadFile(e, 0))" class="form-control-file" />
-                    <InputFile OnChange="@(e => LoadFile(e, 1))" class="form-control-file" />
-                    <InputFile OnChange="@(e => LoadFile(e, 2))" class="form-control-file" />
+                    @* --- START: PREVIEW AND INPUT FOR FILE 1 --- *@
+                    <div class="image-input-container">
+                        @if (!string.IsNullOrEmpty(filePreviews[0]))
+                        {
+                            <img src="@filePreviews[0]" class="inline-preview" />
+                        }
+                        <InputFile OnChange="@(e => LoadFile(e, 0))" class="form-control-file" />
+                    </div>
+                    @* --- END: PREVIEW AND INPUT FOR FILE 1 --- *@
+
+                    @* --- START: PREVIEW AND INPUT FOR FILE 2 --- *@
+                    <div class="image-input-container">
+                        @if (!string.IsNullOrEmpty(filePreviews[1]))
+                        {
+                            <img src="@filePreviews[1]" class="inline-preview" />
+                        }
+                        <InputFile OnChange="@(e => LoadFile(e, 1))" class="form-control-file" />
+                    </div>
+                    @* --- END: PREVIEW AND INPUT FOR FILE 2 --- *@
+
+                    @* --- START: PREVIEW AND INPUT FOR FILE 3 --- *@
+                    <div class="image-input-container">
+                        @if (!string.IsNullOrEmpty(filePreviews[2]))
+                        {
+                            <img src="@filePreviews[2]" class="inline-preview" />
+                        }
+                        <InputFile OnChange="@(e => LoadFile(e, 2))" class="form-control-file" />
+                    </div>
+                    @* --- END: PREVIEW AND INPUT FOR FILE 3 --- *@
                 </div>
             </div>
 
@@ -123,8 +175,11 @@
 
 @code {
     private ProductViewModel productViewModel = new();
-    private List<IBrowserFile> loadedFiles = new();
+    private List<IBrowserFile> loadedFiles = new(new IBrowserFile[3]);
+    private string[] imageUrlPreviews = new string[3];
+    private string[] filePreviews = new string[3];
     private List<string> SeasonYears { get; set; } = new();
+    private const long MaxFileSize = 1024 * 1024 * 5; // 5MB limit
 
     protected override void OnInitialized()
     {
@@ -137,13 +192,52 @@
         SeasonYears.Reverse();
     }
 
-    private void LoadFile(InputFileChangeEventArgs e, int index)
+    // --- START OF UPDATED LoadFile METHOD ---
+    private async Task LoadFile(InputFileChangeEventArgs e, int index)
     {
-        while (loadedFiles.Count <= index)
+        try
         {
-            loadedFiles.Add(null);
+            // Store the full file reference for later saving
+            loadedFiles[index] = e.File;
+
+            if (e.File != null)
+            {
+                // Check the size *before* doing anything
+                if (e.File.Size > MaxFileSize)
+                {
+                    Logger.LogWarning($"File '{e.File.Name}' exceeds {MaxFileSize} byte limit. Preview aborted.");
+                    loadedFiles[index] = null; // Clear the file
+                    filePreviews[index] = null; // Clear the preview
+                    return;
+                }
+
+                // --- THIS IS THE FIX ---
+                // Request a small, resized image preview from the browser
+                // instead of loading the entire file into memory.
+                // This prevents the TimeoutException.
+                var resizedImage = await e.File.RequestImageFileAsync(e.File.ContentType, 150, 150); // 150x150 preview
+
+                // Only read the small preview's bytes
+                var buffer = new byte[resizedImage.Size];
+                await resizedImage.OpenReadStream().ReadAsync(buffer);
+
+                var base64Image = Convert.ToBase64String(buffer);
+                filePreviews[index] = $"data:{e.File.ContentType};base64,{base64Image}";
+            }
         }
-        loadedFiles[index] = e.File;
+        catch (Exception ex)
+        {
+            // Catch any error during preview generation (e.g., file isn't an image)
+            Logger.LogError(ex, $"Error generating preview for file '{e.File?.Name}'.");
+            loadedFiles[index] = null;
+            filePreviews[index] = null;
+        }
+    }
+    // --- END OF UPDATED LoadFile METHOD ---
+
+    private void UpdateUrlPreview(ChangeEventArgs e, int index)
+    {
+        imageUrlPreviews[index] = e.Value.ToString();
     }
 
     private async Task HandleValidSubmit()
@@ -159,18 +253,45 @@
             Season = $"{productViewModel.SeasonType} ({productViewModel.SeasonYear})"
         };
 
-        var uploadedImageUrls = new List<string>();
-        foreach (var file in loadedFiles.Where(f => f != null))
+        var uploadedImageUrls = new List<string>(new string[3]);
+        var uploadPath = Path.Combine(Environment.WebRootPath, "Images", "products");
+        Directory.CreateDirectory(uploadPath);
+
+        try
         {
-            var path = Path.Combine(Environment.WebRootPath, "Images", "products", file.Name);
-            await using FileStream fs = new(path, FileMode.Create);
-            await file.OpenReadStream(file.Size).CopyToAsync(fs);
-            uploadedImageUrls.Add($"/Images/products/{file.Name}");
+            for (int i = 0; i < loadedFiles.Count; i++)
+            {
+                var file = loadedFiles[i];
+                if (file != null)
+                {
+                    // This is where we check the size *again* before saving
+                    if (file.Size > MaxFileSize)
+                    {
+                        Logger.LogWarning($"File '{file.Name}' at index {i} is too large and was skipped.");
+                        continue; // Skip this file
+                    }
+
+                    var uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
+                    var path = Path.Combine(uploadPath, uniqueFileName);
+
+                    await using FileStream fs = new(path, FileMode.Create);
+                    // Stream the full file (up to 5MB) to the server disk
+                    await file.OpenReadStream(maxAllowedSize: MaxFileSize).CopyToAsync(fs);
+
+                    uploadedImageUrls[i] = $"/Images/products/{uniqueFileName}";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // This will catch any error during the *save* process
+            Logger.LogError(ex, "Error occurred while saving images. Check file size limits and permissions.");
+            return;
         }
 
-        newProduct.ImageUrl = uploadedImageUrls.Count > 0 ? uploadedImageUrls[0] : productViewModel.ImageUrl1;
-        newProduct.ImageUrl2 = uploadedImageUrls.Count > 1 ? uploadedImageUrls[1] : productViewModel.ImageUrl2;
-        newProduct.ImageUrl3 = uploadedImageUrls.Count > 2 ? uploadedImageUrls[2] : productViewModel.ImageUrl3;
+        newProduct.ImageUrl = !string.IsNullOrEmpty(uploadedImageUrls[0]) ? uploadedImageUrls[0] : productViewModel.ImageUrl1;
+        newProduct.ImageUrl2 = !string.IsNullOrEmpty(uploadedImageUrls[1]) ? uploadedImageUrls[1] : productViewModel.ImageUrl2;
+        newProduct.ImageUrl3 = !string.IsNullOrEmpty(uploadedImageUrls[2]) ? uploadedImageUrls[2] : productViewModel.ImageUrl3;
 
         DbContext.Products.Add(newProduct);
         await DbContext.SaveChangesAsync();
