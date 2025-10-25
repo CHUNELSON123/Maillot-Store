@@ -55,9 +55,11 @@
 
         <div class="form-check mb-3">
             <InputCheckbox @bind-Value="Input.AgreeToTerms" class="form-check-input" id="agree-to-terms" />
-            <label class="form-check-label" for="agree-to-terms">
-                I agree to Terms and Conditions
-            </label>
+           <a href="/terms-and-conditions">
+                <label class="form-check-label" for="agree-to-terms">
+                    I agree to Terms and Conditions
+                </label>
+           </a>
             <ValidationMessage For="() => Input.AgreeToTerms" class="text-danger" />
         </div>
 

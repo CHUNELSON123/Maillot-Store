@@ -6,7 +6,10 @@
 @using MaillotStore.Services
 @inject ApplicationDbContext DbContext
 @inject NavigationManager NavigationManager
-@inject ICartService CartService
+@* --- START: UPDATED INJECT --- *@
+@* We remove ICartService and use StateContainer to match the Checkout page *@
+@inject StateContainer StateContainer
+@* --- END: UPDATED INJECT --- *@
 
 @* --- THIS NEW SECTION ADDS THE TAGS FOR SHARING --- *@
 <HeadContent>
@@ -74,14 +77,14 @@
                             <input type="text" class="form-control form-control-dark-uniform" placeholder="Player Name" @bind="customName" />
                         </div>
                         <div class="col-md-4">
-                            <input type="number" class="form-control form-control-dark-uniform" placeholder="Number" @bind="customNumber" />
+                            <input type="number" class="form-control form-control-dark-uniform" placeholder="Number" @bind="customNumber" min="0" />
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <div class="col-md-8 mb-3 mb-md-0">
                             <select class="form-select form-control-dark-uniform" @bind="selectedSize">
-                                <option value=""  selected>Size</option>
+                                <option value="" selected>Size</option>
                                 @foreach (var size in availableSizes)
                                 {
                                     <option value="@size">@size</option>
@@ -89,9 +92,18 @@
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <input type="number" class="form-control form-control-dark-uniform" placeholder="Quantity" @bind="quantity" />
+                            <input type="number" class="form-control form-control-dark-uniform" placeholder="Quantity" @bind="quantity" min="1" />
                         </div>
                     </div>
+
+                    @* --- Status Message --- *@
+                    @if (!string.IsNullOrEmpty(statusMessage))
+                    {
+                        <div class="alert @statusMessageClass mt-3" role="alert">
+                            @statusMessage
+                        </div>
+                    }
+
 
                     <div class="d-grid gap-3 mt-5">
                         <button class="btn btn-lg btn-dark-uniform" @onclick="AddToCart">
@@ -137,8 +149,11 @@
     private string customName = string.Empty;
     private int? customNumber;
     private string? selectedSize;
-    private int quantity = 1;
+    private int? quantity; // Nullable to show placeholder
     private List<string> availableSizes = new() { "S", "M", "L", "XL", "XXL" };
+
+    private string? statusMessage;
+    private string statusMessageClass = "alert-warning";
 
     protected override async Task OnParametersSetAsync()
     {
@@ -147,7 +162,6 @@
         if (product != null)
         {
             currentImageUrl = product.ImageUrl;
-            selectedSize = availableSizes.FirstOrDefault(); // Set a default size
             await LoadRelatedProducts();
             StateHasChanged();
         }
@@ -169,22 +183,61 @@
         currentImageUrl = imageUrl;
     }
 
-    private void AddToCart()
+    private bool ValidateInput()
     {
-        if (product != null && !string.IsNullOrEmpty(selectedSize))
+        statusMessage = null;
+        statusMessageClass = "alert-warning";
+
+        if (string.IsNullOrEmpty(selectedSize))
         {
-            CartService.AddToCart(product, quantity, selectedSize, string.IsNullOrWhiteSpace(customName) ? null : customName, customNumber);
-            NavigationManager.NavigateTo("/checkout");
-            // You might want to show a success message here
+            statusMessage = "Please select a size.";
+            return false;
         }
+
+        if (quantity == null || quantity < 1)
+        {
+            statusMessage = "Please enter a quantity of at least 1.";
+            return false;
+        }
+
+        return true;
     }
 
-    private void OrderNow()
+    // --- START: UPDATED AddToCart METHOD ---
+    private async Task AddToCart()
     {
-        if (product != null && !string.IsNullOrEmpty(selectedSize))
+        if (!ValidateInput())
         {
-            CartService.AddToCart(product, quantity, selectedSize, string.IsNullOrWhiteSpace(customName) ? null : customName, customNumber);
+            return;
+        }
+
+        if (product != null)
+        {
+            // Call StateContainer (which IS async) instead of CartService
+            await StateContainer.AddToCart(product, quantity.Value, selectedSize, string.IsNullOrWhiteSpace(customName) ? null : customName, customNumber);
+
+            // This navigation will only happen AFTER the await is complete
             NavigationManager.NavigateTo("/checkout");
         }
     }
+    // --- END: UPDATED AddToCart METHOD ---
+
+    // --- START: UPDATED OrderNow METHOD ---
+    private async Task OrderNow()
+    {
+        if (!ValidateInput())
+        {
+            return;
+        }
+
+        if (product != null)
+        {
+            // Call StateContainer (which IS async) instead of CartService
+            await StateContainer.AddToCart(product, quantity.Value, selectedSize, string.IsNullOrWhiteSpace(customName) ? null : customName, customNumber);
+
+            // This navigation will only happen AFTER the await is complete
+            NavigationManager.NavigateTo("/checkout");
+        }
+    }
+    // --- END: UPDATED OrderNow METHOD ---
 }

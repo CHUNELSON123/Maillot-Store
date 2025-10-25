@@ -43,7 +43,20 @@
                                         <img src="@item.Product.ImageUrl" alt="@item.Product.Name" class="img-fluid me-3" style="width: 50px;">
                                         <div>
                                             <strong>@item.Product.Name</strong><br>
-                                            <small class="text-muted">Size: @item.Size</small>
+
+                                            @* --- START: UPDATED --- *@
+                                            <div class="d-flex align-items-center mt-1">
+                                                <span class="text-muted me-2">Size:</span>
+                                                <select class="form-select form-select-sm bg-dark text-white" style="width: 80px;"
+                                                        @onchange="(e) => UpdateSize(item, e)">
+                                                    @foreach (var size in availableSizes)
+                                                    {
+                                                        <option value="@size" selected="@(size == item.Size)">@size</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                            @* --- END: UPDATED --- *@
+
                                             @if (!string.IsNullOrEmpty(item.CustomName) || item.CustomNumber.HasValue)
                                             {
                                                 <div class="customization-display">
@@ -117,6 +130,10 @@
     private string customerAddress;
     private string optionalMessage;
 
+    // --- START: ADDED ---
+    private List<string> availableSizes = new() { "S", "M", "L", "XL", "XXL" };
+    // --- END: ADDED ---
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -153,6 +170,24 @@
             }
         }
 
+        // --- START: COMMISSION LOGIC ---
+        var commissionSetting = await DbContext.CommissionSettings.FirstOrDefaultAsync();
+        if (commissionSetting == null)
+        {
+            commissionSetting = new CommissionSetting { CurrentRate = 0.07m };
+            DbContext.CommissionSettings.Add(commissionSetting);
+            await DbContext.SaveChangesAsync();
+        }
+
+        decimal orderCommission = 0;
+        string referralCode = ReferralService.GetReferralCode();
+
+        if (!string.IsNullOrEmpty(referralCode))
+        {
+            orderCommission = Subtotal * commissionSetting.CurrentRate;
+        }
+        // --- END: COMMISSION LOGIC ---
+
         var order = new Order
         {
             CustomerName = customerName,
@@ -161,8 +196,9 @@
             OrderDate = DateTime.UtcNow,
             OrderItems = orderItemsForDb,
             TotalAmount = Subtotal,
-            ReferralCode = ReferralService.GetReferralCode(),
-            Status = "Pending"
+            ReferralCode = referralCode,
+            Status = "Pending",
+            CommissionAmount = orderCommission
         };
 
         DbContext.Orders.Add(order);
@@ -195,7 +231,7 @@
             messageBuilder.AppendLine($" – FCFA {item.Price.ToString("N0")} XAF");
 
             string productUrl = $"{NavigationManager.BaseUri}product/{item.Product.ProductId}";
-            messageBuilder.AppendLine($"   Link: {productUrl}");
+            messageBuilder.AppendLine($"    Link: {productUrl}");
 
             itemNumber++;
         }
@@ -224,6 +260,19 @@
     {
         await StateContainer.UpdateCartItemQuantity(item, quantity);
     }
+
+    // --- START: ADDED ---
+    private async Task UpdateSize(OrderItem item, ChangeEventArgs e)
+    {
+        var newSize = e.Value.ToString();
+        if (!string.IsNullOrEmpty(newSize))
+        {
+            // This assumes your StateContainer has a method 'UpdateCartItemSize'
+            // If it is named differently (like 'UpdateSize'), please adjust this line.
+            await StateContainer.UpdateCartItemSize(item, newSize);
+        }
+    }
+    // --- END: ADDED ---
 
     public void Dispose()
     {

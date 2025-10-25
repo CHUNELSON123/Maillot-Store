@@ -17,5 +17,6 @@
         public bool IsVisibleToInfluencer { get; set; } = true; // <-- ADD THIS LINE
                                                                 // Inside your Order class
         public decimal CommissionRate { get; set; }
+        public decimal CommissionAmount { get; set; }
     }
 }

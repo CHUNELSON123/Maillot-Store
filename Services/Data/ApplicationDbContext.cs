@@ -12,9 +12,10 @@ namespace MaillotStore.Data
         public DbSet<OrderItem> OrderItems { get; set; }
 
         public DbSet<Order> Orders { get; set; }
+        public DbSet<CommissionSetting> CommissionSettings { get; set; }
 
-       
-   
+
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

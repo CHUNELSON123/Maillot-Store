@@ -14,6 +14,7 @@
 <PageTitle>Commissions</PageTitle>
 
 <div class="commissions-container">
+
     <h1 class="commissions-title">Commission List</h1>
 
     <div class="table-responsive">
@@ -83,6 +84,29 @@
         <p><strong>Total Paid:</strong> FCFA @totalCommissionPaid.ToString("N0") XAF</p>
         <p><strong>Balance Remaining:</strong> FCFA @((totalCommissionEarned - totalCommissionPaid).ToString("N0")) XAF</p>
     </div>
+
+    @* --- START: MOVED SECTION --- *@
+    <div class="commission-rate-setter" style="margin-top: 2rem; padding: 1.5rem; background-color: #212529; color: #fff; border-radius: 8px; border: 1px solid #fff;">
+        <h3 class="commissions-title">Global Commission Rate</h3>
+        <p>Current Rate: <strong>@(currentCommissionRate * 100)%</strong></p>
+        <p>This rate will be applied to all new orders placed after you click "Update". It will not affect past orders.</p>
+
+        <div class="input-group" style="max-width: 400px;">
+            <InputNumber @bind-Value="newCommissionPercentage" class="form-control form-control-dark" placeholder="Enter new rate (e.g., 7)" />
+            <span class="input-group-text bg-dark text-white" style="border-color: #6c757d;">%</span>
+            <button class="btn btn-primary" @onclick="UpdateCommissionRate">Update Rate</button>
+        </div>
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="alert alert-success mt-2">@successMessage</div>
+        }
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger mt-2">@errorMessage</div>
+        }
+    </div>
+    @* --- END: MOVED SECTION --- *@
+
 </div>
 
 @code {
@@ -95,28 +119,71 @@
     private decimal totalCommissionEarned;
     private decimal totalCommissionPaid;
 
+    private decimal currentCommissionRate;
+    private double newCommissionPercentage;
+    private string successMessage = "";
+    private string errorMessage = "";
+
     protected override async Task OnInitializedAsync()
     {
+        await LoadCurrentRate();
         await LoadCommissions();
+    }
+
+    private async Task LoadCurrentRate()
+    {
+        var setting = await DbContext.CommissionSettings.FirstOrDefaultAsync();
+        if (setting == null)
+        {
+            setting = new CommissionSetting { CurrentRate = 0.07m };
+            DbContext.CommissionSettings.Add(setting);
+            await DbContext.SaveChangesAsync();
+        }
+        currentCommissionRate = setting.CurrentRate;
+        newCommissionPercentage = (double)(currentCommissionRate * 100);
+    }
+
+    private async Task UpdateCommissionRate()
+    {
+        successMessage = "";
+        errorMessage = "";
+
+        if (newCommissionPercentage <= 0 || newCommissionPercentage > 50)
+        {
+            errorMessage = "Please enter a valid rate between 1 and 50.";
+            return;
+        }
+
+        try
+        {
+            var setting = await DbContext.CommissionSettings.FirstAsync();
+            setting.CurrentRate = (decimal)(newCommissionPercentage / 100.0);
+            await DbContext.SaveChangesAsync();
+
+            currentCommissionRate = setting.CurrentRate;
+            successMessage = $"Commission rate updated to {newCommissionPercentage}%. This will apply to all new orders.";
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Error updating rate: " + ex.Message;
+        }
     }
 
     private async Task LoadCommissions()
     {
         allCommissions.Clear();
 
-        // Get all orders that were made via a referral
         var referredOrders = await DbContext.Orders
             .Where(o => !string.IsNullOrEmpty(o.ReferralCode))
             .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
             .OrderByDescending(o => o.OrderDate)
             .ToListAsync();
 
-        // Get all influencers
         var influencers = await UserManager.GetUsersInRoleAsync("Influencer");
 
         foreach (var order in referredOrders)
         {
-            // Find the influencer who referred this order
             var influencer = influencers.FirstOrDefault(i => i.ReferralCode == order.ReferralCode);
 
             allCommissions.Add(new CommissionViewModel
@@ -126,12 +193,11 @@
                 InfluencerName = influencer?.FullName ?? "Unknown",
                 ProductNames = order.OrderItems.Select(oi => oi.Product.Name).ToList(),
                 TotalAmount = order.TotalAmount,
-                CommissionAmount = order.TotalAmount * 0.07m,
+                CommissionAmount = order.CommissionAmount,
                 Status = order.Status
             });
         }
 
-        // Calculate summary
         totalCommissionEarned = allCommissions.Sum(c => c.CommissionAmount);
         totalCommissionPaid = allCommissions.Where(c => c.Status == "Paid").Sum(c => c.CommissionAmount);
 
@@ -161,15 +227,11 @@
         {
             order.Status = "Paid";
             await DbContext.SaveChangesAsync();
-
-            // Notify other components (like the influencer dashboard) that an order has changed
             OrderStateService.NotifyOrderPlaced();
-
-            await LoadCommissions(); // Refresh the list
+            await LoadCommissions();
         }
     }
 
-    // A helper class to hold the combined data for the view
     public class CommissionViewModel
     {
         public int OrderId { get; set; }

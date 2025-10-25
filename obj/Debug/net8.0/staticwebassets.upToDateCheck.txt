@@ -1,5 +1,7 @@
+wwwroot\app.css
 wwwroot\bootstrap\bootstrap.min.css
 wwwroot\bootstrap\bootstrap.min.css.map
+wwwroot\css\account.css
 wwwroot\css\add-product.css
 wwwroot\css\admin.css
 wwwroot\css\commissions.css
@@ -25,5 +27,3 @@ wwwroot\Images\products\WhatsApp Image 2025-10-22 at 19.55.51 (1).jpeg
 wwwroot\Images\products\WhatsApp Image 2025-10-22 at 19.55.51.jpeg
 wwwroot\Images\psg.jpeg
 wwwroot\Images\real.jpeg
-wwwroot\app.css
-wwwroot\css\account.css

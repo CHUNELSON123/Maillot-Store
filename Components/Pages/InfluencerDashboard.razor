@@ -3,7 +3,7 @@
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @using MaillotStore.Data
-@using MaillotStore.Models
+@using MaillotStore.Models  
 @using MaillotStore.Services
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -16,18 +16,19 @@
 
 <PageTitle>Influencer Dashboard</PageTitle>
 
-@* --- ADD A STYLESHEET REFERENCE --- *@
 <link href="css/influencer-dashboard.css" rel="stylesheet" />
 
 @if (currentUser is not null)
 {
     <div class="dashboard-container">
-        @* --- WELCOME HEADER --- *@
         <div class="welcome-header">
             <h1>WELCOME, @currentUser.FullName?.ToUpper()</h1>
         </div>
 
-        @* --- REFERRAL LINK SECTION (Unchanged) --- *@
+        <div class="admin-contact-info" style="text-align:center; margin-bottom: 20px;">
+            <p><strong>Shop Owner Contact:</strong> <a href="tel:@adminPhoneNumber">@adminPhoneNumber</a></p>
+        </div>
+
         <div class="referral-info">
             <p>Referral Code: @currentUser.ReferralCode</p>
             <p>Referral Link: @referralLink</p>
@@ -39,11 +40,10 @@
             </div>
         </div>
 
-        @* --- START: UPDATED SALES SECTION FOR RESPONSIVENESS --- *@
         <div class="sales-section">
             <h2>Your Sales via Referral Link</h2>
 
-            @* --- Desktop Table (Hidden on Mobile) --- *@
+            @* --- Desktop Table --- *@
             <div class="table-responsive d-none d-md-block">
                 <table class="sales-table">
                     <thead>
@@ -80,7 +80,8 @@
                                         }
                                     </td>
                                     <td>FCFA @order.TotalAmount.ToString("N0") XAF</td>
-                                    <td>FCFA @((order.TotalAmount * 0.07m).ToString("N0")) XAF</td>
+                                    @* --- UPDATED: Use CommissionAmount stored on the order --- *@
+                                    <td>FCFA @order.CommissionAmount.ToString("N0") XAF</td>
                                     <td>@(string.IsNullOrEmpty(order.Status) ? "Pending" : order.Status)</td>
                                     <td>
                                         <button class="btn btn-danger btn-sm" @onclick="() => DeleteOrder(order.Id)">Delete</button>
@@ -92,7 +93,7 @@
                 </table>
             </div>
 
-            @* --- Mobile Cards (Visible only on Mobile) --- *@
+            @* --- Mobile Cards --- *@
             <div class="d-md-none">
                 @if (!referredOrders.Any())
                 {
@@ -117,7 +118,8 @@
                                     }
                                 </ul>
                                 <p><strong>Amount:</strong> FCFA @order.TotalAmount.ToString("N0") XAF</p>
-                                <p><strong>Commission:</strong> FCFA @((order.TotalAmount * 0.07m).ToString("N0")) XAF</p>
+                                @* --- UPDATED: Use CommissionAmount stored on the order --- *@
+                                <p><strong>Commission:</strong> FCFA @order.CommissionAmount.ToString("N0") XAF</p>
                                 <p><strong>Status:</strong> @(string.IsNullOrEmpty(order.Status) ? "Pending" : order.Status)</p>
                             </div>
                             <div class="card-footer">
@@ -128,17 +130,19 @@
                 }
             </div>
         </div>
-        @* --- END: UPDATED SALES SECTION --- *@
 
         <br />
         <br />
 
-        @* --- PERFORMANCE SUMMARY SECTION (Unchanged) --- *@
+        @* --- PERFORMANCE SUMMARY SECTION --- *@
         <div class="performance-summary">
             <h2>Your Performance:</h2>
-            <p>Total Sales: @referredOrders.Count</p>
-            <p>Commission Earned: FCFA @totalCommission.ToString("N0") XAF</p>
-            <p>Commission Paid: FCFA @paidCommission.ToString("N0") XAF</p>
+            @* --- START: NEW LINE TO DISPLAY RATE --- *@
+            <p><strong>Current Commission Rate:</strong> @(currentCommissionRate * 100)% <em class="text-muted">(Applies to new orders)</em></p>
+            @* --- END: NEW LINE TO DISPLAY RATE --- *@
+            <p>Total Sales Recorded: @referredOrders.Count</p>
+            <p>Total Commission Earned: FCFA @totalCommission.ToString("N0") XAF</p>
+            <p>Total Commission Paid: FCFA @paidCommission.ToString("N0") XAF</p>
             <p>Balance Remaining: FCFA @((totalCommission - paidCommission).ToString("N0")) XAF</p>
         </div>
     </div>
@@ -155,6 +159,11 @@ else
     private List<Order> referredOrders = new();
     private decimal totalCommission = 0;
     private decimal paidCommission = 0;
+    private string adminPhoneNumber = "Contact not available";
+
+    // --- START: NEW VARIABLE ---
+    private decimal currentCommissionRate; // To store the rate read from DB
+    // --- END: NEW VARIABLE ---
 
     protected override async Task OnInitializedAsync()
     {
@@ -165,16 +174,46 @@ else
         if (user.Identity is { IsAuthenticated: true })
         {
             currentUser = await UserManager.GetUserAsync(user);
-            await LoadSalesData();
+            if (currentUser != null) // Ensure user object is loaded
+            {
+                await LoadSalesData(); // Load sales which uses currentUser.ReferralCode
+            }
         }
+
+        // Load Admin Phone Number (no changes needed here)
+        var adminUsers = await UserManager.GetUsersInRoleAsync("Admin");
+        var adminUser = adminUsers.FirstOrDefault();
+        if (adminUser is not null && !string.IsNullOrEmpty(adminUser.PhoneNumber))
+        {
+            adminPhoneNumber = adminUser.PhoneNumber;
+        }
+
+        // --- START: NEW LOGIC TO LOAD COMMISSION RATE ---
+        // Load the current commission rate setting from the database
+        var setting = await DbContext.CommissionSettings.AsNoTracking().FirstOrDefaultAsync();
+        if (setting != null)
+        {
+            // Use AsNoTracking() as we are only reading the value
+            currentCommissionRate = setting.CurrentRate;
+        }
+        else
+        {
+            // Fallback rate if the setting hasn't been created in the DB yet
+            currentCommissionRate = 0.07m; // Default to 7%
+        }
+        // --- END: NEW LOGIC TO LOAD COMMISSION RATE ---
     }
 
     private void RefreshDashboardData()
     {
+        // Use InvokeAsync to ensure updates happen on the UI thread
         InvokeAsync(async () =>
         {
+            // Reload sales data AND the commission rate in case it changed
             await LoadSalesData();
-            StateHasChanged();
+            var setting = await DbContext.CommissionSettings.AsNoTracking().FirstOrDefaultAsync();
+            currentCommissionRate = setting?.CurrentRate ?? 0.07m; // Update rate display
+            StateHasChanged(); // Tell Blazor to re-render the component
         });
     }
 
@@ -195,8 +234,18 @@ else
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
 
-            totalCommission = referredOrders.Sum(o => o.TotalAmount * 0.07m);
-            paidCommission = referredOrders.Where(o => o.Status == "Paid").Sum(o => o.TotalAmount * 0.07m);
+            // --- UPDATED: Calculate using the CommissionAmount stored on each order ---
+            totalCommission = referredOrders.Sum(o => o.CommissionAmount);
+            paidCommission = referredOrders.Where(o => o.Status == "Paid").Sum(o => o.CommissionAmount);
+            // --- END: UPDATED ---
+        }
+        else
+        {
+             // Clear data if user has no referral code (or isn't loaded yet)
+            referralLink = string.Empty;
+            referredOrders = new List<Order>();
+            totalCommission = 0;
+            paidCommission = 0;
         }
     }
 
@@ -207,17 +256,28 @@ else
         {
             orderToHide.IsVisibleToInfluencer = false;
             await DbContext.SaveChangesAsync();
-            await LoadSalesData();
+            await LoadSalesData(); // Refresh the list after hiding
+            StateHasChanged(); // Update UI
         }
     }
 
     private async Task CopyReferralLink()
     {
-        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralLink);
+         try
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", referralLink);
+            // Optional: You could add a temporary message here saying "Link Copied!"
+        }
+        catch (JSException ex)
+        {
+            Console.WriteLine($"Clipboard error: {ex.Message}"); // Log the error for debugging
+             // Optional: Show an error message to the user if copying fails
+        }
     }
 
     public void Dispose()
     {
+        // Unsubscribe from the event when the component is destroyed
         OrderStateService.OnOrderPlaced -= RefreshDashboardData;
     }
 }
