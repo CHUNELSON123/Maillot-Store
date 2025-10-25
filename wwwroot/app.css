@@ -367,7 +367,7 @@ header {
     color: #000000;
     font-weight: bold;
     padding: 12px 30px;
-    border-radius: 10px; 
+    border-radius: 10px;
     text-transform: uppercase;
     transition: transform 0.2s ease-in-out;
     border: none;
@@ -469,6 +469,7 @@ header {
         transition: border-color 0.3s ease;
         padding: 0.2rem;
     }
+
         .pd-thumbnail-images .img-thumbnail:hover {
             border-color: #adb5bd;
         }
@@ -807,7 +808,7 @@ header {
     transition: color 0.3s ease;
 }
 
- 
+
 .form-group {
     margin-bottom: 25px;
 }
@@ -820,7 +821,7 @@ header {
     padding: 12px;
     border-radius: 0;
     font-size: 1.1rem;
-    box-sizing: border-box;
+    box-sizing: border-box; /* Ensures padding is included in the width */
 }
 
     .form-control::placeholder {
@@ -870,13 +871,14 @@ textarea.form-control {
         border-right: none;
         padding-bottom: 40px;
         border-bottom: 1px solid #333;
+        min-width: 100%; /* Ensures section takes full width before adjustments */
     }
 
     .contact-form-section {
         border-bottom: none;
     }
 
-    /* This is the change: contact info now comes first */
+    /* Order sections on mobile */
     .contact-info-section {
         order: 1;
     }
@@ -884,6 +886,23 @@ textarea.form-control {
     .contact-form-section {
         order: 2;
     }
+
+        /* --- START OF FIX --- */
+        /* Reduce width of form fields inside the form section on mobile */
+        .contact-form-section .form-control {
+            width: 90%; /* Make fields slightly narrower than container */
+            margin-left: auto; /* Center the fields horizontally */
+            margin-right: auto; /* Center the fields horizontally */
+        }
+
+        /* Also adjust the button width and centering */
+        .contact-form-section .submit-message-btn {
+            width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    /* --- END OF FIX --- */
+
 }
 
 /* === CHECKOUT PAGE STYLES === */
@@ -1070,7 +1089,7 @@ textarea.form-control {
     width: 100%;
     border-collapse: collapse; /* Removes default gaps between cells */
     margin: 0px;
-    ma
+    /* Removed 'ma' from here */
 }
 
     .sales-table th, .sales-table td {
@@ -1083,6 +1102,7 @@ textarea.form-control {
     .sales-table th {
         font-weight: bold;
     }
+
     .sales-table thead th {
         border: 1px solid #fff;
     }
@@ -1238,3 +1258,14 @@ textarea.form-control {
 
 /* Hide table on small screens (Bootstrap class d-md-none already does this) */
 /* Hide mobile cards on medium screens and up (Bootstrap class d-none d-md-block already does this) */
+
+.sidenav-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    z-index: 1040; /* Position it behind the sidenav but above the main content */
+    /* No transition needed, appears instantly when menu opens */
+}

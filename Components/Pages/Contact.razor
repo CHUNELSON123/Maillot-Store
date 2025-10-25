@@ -11,6 +11,8 @@
     </p>
 
     <div class="contact-body">
+
+        @* --- "GET IN TOUCH" SECTION (FIRST) --- *@
         <div class="contact-info-section">
             <h3 class="info-title">Get In Touch</h3>
             <ul class="info-list">
@@ -40,7 +42,9 @@
             </div>
         </div>
 
-        <div class="contact-form-section">
+        @* --- "SEND US A MESSAGE" SECTION (SECOND) --- *@
+        @* --- FIX: Added centering classes --- *@
+        <div class="contact-form-section px-0 mx-0 px-md-3">
             <h3 class="form-title">Send Us A Message</h3>
 
             <EditForm Model="@contactForm" OnValidSubmit="HandleSubmit">

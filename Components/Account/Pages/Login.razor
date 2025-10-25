@@ -1,225 +1,124 @@
 ﻿@page "/Account/Login"
-
 @attribute [AllowAnonymous]
 
-
-
 @using System.ComponentModel.DataAnnotations
-
 @using Microsoft.AspNetCore.Authorization
-
 @using Microsoft.AspNetCore.Identity
-
 @using MaillotStore.Data
 
-
-
 @inject SignInManager<ApplicationUser> SignInManager
-
 @inject UserManager<ApplicationUser> UserManager
-
 @inject NavigationManager NavigationManager
-
 @inject ILogger<Login> Logger
-
 @inject IdentityRedirectManager RedirectManager
-
-
 
 <PageTitle>Log in</PageTitle>
 
-
-
 <div class="account-container">
-
     <h1>Log In</h1>
-
     <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login" class="account-form">
-
         <DataAnnotationsValidator />
 
-
-
         @if (!string.IsNullOrEmpty(errorMessage))
-
         {
-
             <div class="alert alert-danger" role="alert">@errorMessage</div>
-
         }
-
-
 
         <ValidationSummary class="text-danger" role="alert" />
 
-
-
         <div class="form-floating mb-3">
-
             <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-
             <label for="email" class="form-label">Email</label>
-
             <ValidationMessage For="() => Input.Email" class="text-danger" />
-
         </div>
-
         <div class="form-floating mb-3">
-
             <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
-
             <label for="password" class="form-label">Password</label>
-
             <ValidationMessage For="() => Input.Password" class="text-danger" />
-
         </div>
-
         <div class="form-check mb-3">
-
             <InputCheckbox @bind-Value="Input.RememberMe" class="form-check-input" id="remember-me" />
-
             <label class="form-check-label" for="remember-me">
-
                 Remember me
-
             </label>
-
         </div>
-
         <div class="d-grid">
-
             <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
-
         </div>
 
         <div class="account-links">
-
             <a href="Account/ForgotPassword">Forgot your password?</a><br />
 
-            <a href="Account/Register">Don't have an account, SignUp</a>
-
+            @if (IsAdminContext)
+            {
+                <a href="Account/AdminRegister">Sign up as an Admin</a>
+            }
+            else
+            {
+                <a href="Account/Register">Don't have an account? SignUp</a>
+            }
         </div>
-
     </EditForm>
-
 </div>
 
-
-
 @code {
-
     private string? errorMessage;
 
-
-
     [SupplyParameterFromForm]
-
     private InputModel Input { get; set; } = new();
 
-
-
     [SupplyParameterFromQuery]
-
     private string? ReturnUrl { get; set; }
 
-
+    private bool IsAdminContext => ReturnUrl?.Contains("/admin/", StringComparison.OrdinalIgnoreCase) ?? false;
 
     public async Task LoginUser()
-
     {
-
         errorMessage = null;
-
         var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
 
-
-
         if (result.Succeeded)
-
         {
-
             Logger.LogInformation("User logged in.");
 
-
-
             var user = await UserManager.FindByEmailAsync(Input.Email);
-
             if (user != null)
-
             {
-
                 if (await UserManager.IsInRoleAsync(user, "Admin"))
-
                 {
-
                     NavigationManager.NavigateTo("/admin/dashboard", forceLoad: true);
-
                     return;
-
                 }
-
                 else if (await UserManager.IsInRoleAsync(user, "Influencer"))
-
                 {
-
                     NavigationManager.NavigateTo("/influencer-dashboard", forceLoad: true);
-
                     return;
-
                 }
-
             }
-
             RedirectManager.RedirectTo(ReturnUrl ?? "/");
-
         }
-
         else if (result.IsLockedOut)
-
         {
-
             Logger.LogWarning("User account locked out.");
-
             RedirectManager.RedirectTo("Account/Lockout");
-
         }
-
         else
-
         {
-
             errorMessage = "Error: Invalid login attempt.";
-
         }
-
     }
-
-
 
     private sealed class InputModel
-
     {
-
         [Required]
-
         [EmailAddress]
-
         public string Email { get; set; } = "";
 
-
-
         [Required]
-
         [DataType(DataType.Password)]
-
         public string Password { get; set; } = "";
 
-
-
         [Display(Name = "Remember me?")]
-
         public bool RememberMe { get; set; }
-
     }
-
 }
