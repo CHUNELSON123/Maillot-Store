@@ -148,3 +148,4 @@ C:\Users\FLAVIN\Documents\MT\MaillotStore\obj\Debug\net8.0\refint\MaillotStore.d
 C:\Users\FLAVIN\Documents\MT\MaillotStore\obj\Debug\net8.0\MaillotStore.pdb
 C:\Users\FLAVIN\Documents\MT\MaillotStore\obj\Debug\net8.0\MaillotStore.genruntimeconfig.cache
 C:\Users\FLAVIN\Documents\MT\MaillotStore\obj\Debug\net8.0\ref\MaillotStore.dll
+C:\Users\FLAVIN\Documents\MT\MaillotStore\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
