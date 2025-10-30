@@ -13,6 +13,7 @@ namespace MaillotStore.Data
 
         public DbSet<Order> Orders { get; set; }
         public DbSet<CommissionSetting> CommissionSettings { get; set; }
+        public DbSet<AdminSetting> AdminSettings { get; set; }
 
 
 

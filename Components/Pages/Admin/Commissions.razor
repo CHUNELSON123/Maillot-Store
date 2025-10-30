@@ -9,6 +9,7 @@
 @inject ApplicationDbContext DbContext
 @inject UserManager<ApplicationUser> UserManager
 @inject Services.OrderStateService OrderStateService
+@inject IJSRuntime JSRuntime
 @attribute [Authorize(Roles = "Admin")]
 
 <PageTitle>Commissions</PageTitle>
@@ -47,16 +48,21 @@
                             </td>
                             <td>FCFA @commission.TotalAmount.ToString("N0") XAF</td>
                             <td>FCFA @commission.CommissionAmount.ToString("N0") XAF</td>
-                            <td>
+
+                            @* --- START: UPDATED ACTION CELL --- *@
+                            <td class="action-cell" style="white-space: nowrap;">
                                 @if (commission.Status == "Pending")
                                 {
                                     <button class="btn btn-mark-paid" @onclick="() => MarkAsPaid(commission.OrderId)">Mark as Paid</button>
                                 }
                                 else
                                 {
-                                    <span class="text-success">Paid</span>
+                                    <span class="text-success" style="padding: 6px 12px; display: inline-block; margin-right: 5px;">Paid</span>
                                 }
+
+                                <button class="btn btn-danger ms-2" @onclick="() => DeleteCommission(commission.OrderId)">Delete</button>
                             </td>
+                            @* --- END: UPDATED ACTION CELL --- *@
                         </tr>
                     }
                 }
@@ -85,28 +91,6 @@
         <p><strong>Balance Remaining:</strong> FCFA @((totalCommissionEarned - totalCommissionPaid).ToString("N0")) XAF</p>
     </div>
 
-    @* --- START: MOVED SECTION --- *@
-    <div class="commission-rate-setter" style="margin-top: 2rem; padding: 1.5rem; background-color: #212529; color: #fff; border-radius: 8px; border: 1px solid #fff;">
-        <h3 class="commissions-title">Global Commission Rate</h3>
-        <p>Current Rate: <strong>@(currentCommissionRate * 100)%</strong></p>
-        <p>This rate will be applied to all new orders placed after you click "Update". It will not affect past orders.</p>
-
-        <div class="input-group" style="max-width: 400px;">
-            <InputNumber @bind-Value="newCommissionPercentage" class="form-control form-control-dark" placeholder="Enter new rate (e.g., 7)" />
-            <span class="input-group-text bg-dark text-white" style="border-color: #6c757d;">%</span>
-            <button class="btn btn-primary" @onclick="UpdateCommissionRate">Update Rate</button>
-        </div>
-        @if (!string.IsNullOrEmpty(successMessage))
-        {
-            <div class="alert alert-success mt-2">@successMessage</div>
-        }
-        @if (!string.IsNullOrEmpty(errorMessage))
-        {
-            <div class="alert alert-danger mt-2">@errorMessage</div>
-        }
-    </div>
-    @* --- END: MOVED SECTION --- *@
-
 </div>
 
 @code {
@@ -115,77 +99,27 @@
     private int currentPage = 1;
     private int pageSize = 20;
     private int totalPages;
-
     private decimal totalCommissionEarned;
     private decimal totalCommissionPaid;
 
-    private decimal currentCommissionRate;
-    private double newCommissionPercentage;
-    private string successMessage = "";
-    private string errorMessage = "";
-
     protected override async Task OnInitializedAsync()
     {
-        await LoadCurrentRate();
         await LoadCommissions();
-    }
-
-    private async Task LoadCurrentRate()
-    {
-        var setting = await DbContext.CommissionSettings.FirstOrDefaultAsync();
-        if (setting == null)
-        {
-            setting = new CommissionSetting { CurrentRate = 0.07m };
-            DbContext.CommissionSettings.Add(setting);
-            await DbContext.SaveChangesAsync();
-        }
-        currentCommissionRate = setting.CurrentRate;
-        newCommissionPercentage = (double)(currentCommissionRate * 100);
-    }
-
-    private async Task UpdateCommissionRate()
-    {
-        successMessage = "";
-        errorMessage = "";
-
-        if (newCommissionPercentage <= 0 || newCommissionPercentage > 50)
-        {
-            errorMessage = "Please enter a valid rate between 1 and 50.";
-            return;
-        }
-
-        try
-        {
-            var setting = await DbContext.CommissionSettings.FirstAsync();
-            setting.CurrentRate = (decimal)(newCommissionPercentage / 100.0);
-            await DbContext.SaveChangesAsync();
-
-            currentCommissionRate = setting.CurrentRate;
-            successMessage = $"Commission rate updated to {newCommissionPercentage}%. This will apply to all new orders.";
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            errorMessage = "Error updating rate: " + ex.Message;
-        }
     }
 
     private async Task LoadCommissions()
     {
         allCommissions.Clear();
-
         var referredOrders = await DbContext.Orders
             .Where(o => !string.IsNullOrEmpty(o.ReferralCode))
             .Include(o => o.OrderItems).ThenInclude(oi => oi.Product)
             .OrderByDescending(o => o.OrderDate)
             .ToListAsync();
-
         var influencers = await UserManager.GetUsersInRoleAsync("Influencer");
 
         foreach (var order in referredOrders)
         {
             var influencer = influencers.FirstOrDefault(i => i.ReferralCode == order.ReferralCode);
-
             allCommissions.Add(new CommissionViewModel
             {
                 OrderId = order.Id,
@@ -229,6 +163,29 @@
             await DbContext.SaveChangesAsync();
             OrderStateService.NotifyOrderPlaced();
             await LoadCommissions();
+        }
+    }
+
+    private async Task DeleteCommission(int orderId)
+    {
+        var commission = allCommissions.FirstOrDefault(c => c.OrderId == orderId);
+        if (commission == null) return;
+
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete the commission for Order ID {orderId} (Influencer: {commission.InfluencerName})?");
+
+        if (confirmed)
+        {
+            var order = await DbContext.Orders.FindAsync(orderId);
+            if (order != null)
+            {
+                order.ReferralCode = null;
+                order.CommissionAmount = 0;
+
+                await DbContext.SaveChangesAsync();
+
+                OrderStateService.NotifyOrderPlaced();
+                await LoadCommissions();
+            }
         }
     }
 

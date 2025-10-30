@@ -7,6 +7,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject ApplicationDbContext DbContext
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime  
 @layout AdminLayout
 @attribute [Authorize(Roles = "Admin")]
 
@@ -40,9 +41,13 @@
                             <td>@influencer.PhoneNumber</td>
                             <td>@influencer.SalesCount</td>
                             <td>FCFA @influencer.CommissionEarned.ToString("N0") XAF</td>
-                            <td class="action-buttons">
+                            
+                            @* --- START: UPDATED ACTION CELL --- *@
+                            <td class="action-buttons" style="white-space: nowrap;">
                                 <button class="view-btn" @onclick="() => ViewInfluencer(influencer.Id)">View</button>
+                                <button class="btn btn-danger ms-2" @onclick="() => DeleteInfluencer(influencer.Id, influencer.FullName)">Delete</button>
                             </td>
+                            @* --- END: UPDATED ACTION CELL --- *@
                         </tr>
                     }
                 }
@@ -89,7 +94,10 @@
                 .Where(o => o.ReferralCode == user.ReferralCode)
                 .ToListAsync();
 
-            var commission = orders.Sum(o => o.TotalAmount * 0.07m);
+            // --- START: UPDATED COMMISSION LOGIC ---
+            // Correctly sum the commission that was already calculated and saved with each order
+            var commission = orders.Sum(o => o.CommissionAmount);
+            // --- END: UPDATED COMMISSION LOGIC ---
 
             allInfluencers.Add(new InfluencerViewModel
             {
@@ -127,6 +135,54 @@
     {
         NavigationManager.NavigateTo($"/admin/view-influencer/{influencerId}");
     }
+
+    // --- START: UPDATED DELETE METHOD ---
+    private async Task DeleteInfluencer(string influencerId, string influencerName)
+    {
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete {influencerName}? This will remove all their associated commissions and referrals. This action is permanent.");
+
+        if (confirmed)
+        {
+            var user = await UserManager.FindByIdAsync(influencerId);
+            if (user != null)
+            {
+                // Step 1: Disassociate all related commissions/orders
+                if (!string.IsNullOrEmpty(user.ReferralCode))
+                {
+                    // Find all orders associated with this influencer
+                    var associatedOrders = await DbContext.Orders
+                        .Where(o => o.ReferralCode == user.ReferralCode)
+                        .ToListAsync();
+
+                    if (associatedOrders.Any())
+                    {
+                        // "Delete" the commission data from these orders
+                        foreach (var order in associatedOrders)
+                        {
+                            order.ReferralCode = null;
+                            order.CommissionAmount = 0;
+                        }
+                        await DbContext.SaveChangesAsync(); // Save changes to the orders
+                    }
+                }
+
+                // Step 2: Delete the user account
+                var result = await UserManager.DeleteAsync(user);
+                
+                if (result.Succeeded)
+                {
+                    await LoadInfluencers(); // Reload the list
+                    StateHasChanged();
+                }
+                else
+                {
+                    // Handle errors
+                    await JSRuntime.InvokeVoidAsync("alert", $"Error deleting influencer: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                }
+            }
+        }
+    }
+    // --- END: UPDATED DELETE METHOD ---
 
     public class InfluencerViewModel
     {

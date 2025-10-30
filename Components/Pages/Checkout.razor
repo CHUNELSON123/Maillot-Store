@@ -159,14 +159,14 @@
             if (productFromDb != null)
             {
                 orderItemsForDb.Add(new OrderItem
-                {
-                    Product = productFromDb,
-                    Quantity = item.Quantity,
-                    Price = item.Price,
-                    Size = item.Size,
-                    CustomName = item.CustomName,
-                    CustomNumber = item.CustomNumber
-                });
+                    {
+                        Product = productFromDb,
+                        Quantity = item.Quantity,
+                        Price = item.Price,
+                        Size = item.Size,
+                        CustomName = item.CustomName,
+                        CustomNumber = item.CustomNumber
+                    });
             }
         }
 
@@ -189,17 +189,17 @@
         // --- END: COMMISSION LOGIC ---
 
         var order = new Order
-        {
-            CustomerName = customerName,
-            CustomerPhone = customerPhone,
-            CustomerAddress = customerAddress,
-            OrderDate = DateTime.UtcNow,
-            OrderItems = orderItemsForDb,
-            TotalAmount = Subtotal,
-            ReferralCode = referralCode,
-            Status = "Pending",
-            CommissionAmount = orderCommission
-        };
+            {
+                CustomerName = customerName,
+                CustomerPhone = customerPhone,
+                CustomerAddress = customerAddress,
+                OrderDate = DateTime.UtcNow,
+                OrderItems = orderItemsForDb,
+                TotalAmount = Subtotal,
+                ReferralCode = referralCode,
+                Status = "Pending",
+                CommissionAmount = orderCommission
+            };
 
         DbContext.Orders.Add(order);
         await DbContext.SaveChangesAsync();
@@ -242,7 +242,29 @@
         messageBuilder.AppendLine("Thank you.");
 
         string whatsappMessage = Uri.EscapeDataString(messageBuilder.ToString());
-        string whatsappUrl = $"https://wa.me/237671007313?text={whatsappMessage}";
+
+        // --- START: THIS IS THE ONLY UPDATED SECTION ---
+        
+        // 1. Fetch the admin WhatsApp number from settings
+        var adminSetting = await DbContext.AdminSettings.FirstOrDefaultAsync(s => s.Key == "AdminWhatsAppNumber");
+        
+        // 2. Use the number from settings, or fall back to your old number if not found.
+        var adminPhoneNumber = adminSetting?.Value ?? "237671007313"; // Fallback number
+        
+        // 3. Clean the number (remove '+' and spaces)
+        adminPhoneNumber = adminPhoneNumber.Replace("+", "").Replace(" ", "");
+        
+        // 4. Ensure the '237' prefix is present
+        if (!adminPhoneNumber.StartsWith("237"))
+        {
+            adminPhoneNumber = "237" + adminPhoneNumber;
+        }
+        
+        // 5. Build the dynamic URL
+        string whatsappUrl = $"https://wa.me/{adminPhoneNumber}?text={whatsappMessage}";
+        
+        // --- END: UPDATED SECTION ---
+
 
         await JSRuntime.InvokeVoidAsync("open", whatsappUrl, "_blank");
 

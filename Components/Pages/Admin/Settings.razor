@@ -1,0 +1,163 @@
+﻿@page "/admin/settings"
+@using MaillotStore.Components.Layout
+@using MaillotStore.Data
+@using MaillotStore.Models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@layout AdminLayout
+@inject ApplicationDbContext DbContext
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>Admin Settings</PageTitle>
+
+<div class="admin-settings-container" style="max-width: 800px; margin: auto; padding: 2rem; background-color: #1a1a1a; border-radius: 8px;">
+
+    <h1 class="commissions-title" style="color: #fff; border-bottom: 2px solid #0d6efd; padding-bottom: 10px;">Admin Settings</h1>
+
+    @* --- Global Commission Rate Section --- *@
+    <div class="commission-rate-setter" style="margin-top: 2rem; padding: 1.5rem; background-color: #212529; color: #fff; border-radius: 8px; border: 1px solid #fff;">
+        <h3 class="commissions-title">Global Commission Rate</h3>
+        <p>Current Rate: <strong>@(currentCommissionRate * 100)%</strong></p>
+        <p>This rate will be applied to all new orders placed after you click "Update". It will not affect past orders.</p>
+
+        <div class="input-group" style="max-width: 400px;">
+            <InputNumber @bind-Value="newCommissionPercentage" class="form-control form-control-dark" placeholder="Enter new rate (e.g., 7)" />
+            <span class="input-group-text bg-dark text-white" style="border-color: #6c757d;">%</span>
+            <button class="btn btn-primary" @onclick="UpdateCommissionRate">Update Rate</button>
+        </div>
+        @if (!string.IsNullOrEmpty(commissionSuccessMessage))
+        {
+            <div class="alert alert-success mt-2">@commissionSuccessMessage</div>
+        }
+        @if (!string.IsNullOrEmpty(commissionErrorMessage))
+        {
+            <div class="alert alert-danger mt-2">@commissionErrorMessage</div>
+        }
+    </div>
+
+    @* --- Admin WhatsApp Number Section --- *@
+    <div class="whatsapp-setter" style="margin-top: 2rem; padding: 1.5rem; background-color: #212529; color: #fff; border-radius: 8px; border: 1px solid #fff;">
+        <h3 class="commissions-title">Admin WhatsApp Number</h3>
+        <p>Current Number: <strong>@(currentWhatsAppNumber ?? "Not Set")</strong></p>
+        <p>This is the number where order notifications will be sent.</p>
+
+        <div class="input-group" style="max-width: 400px;">
+            <InputText @bind-Value="newWhatsAppNumber" class="form-control form-control-dark" placeholder="Enter new WhatsApp number (e.g., +237...)" />
+            <button class="btn btn-primary" @onclick="UpdateWhatsAppNumber">Update Number</button>
+        </div>
+        @if (!string.IsNullOrEmpty(whatsAppSuccessMessage))
+        {
+            <div class="alert alert-success mt-2">@whatsAppSuccessMessage</div>
+        }
+        @if (!string.IsNullOrEmpty(whatsAppErrorMessage))
+        {
+            <div class="alert alert-danger mt-2">@whatsAppErrorMessage</div>
+        }
+    </div>
+
+</div>
+
+@code {
+    // Commission Rate Properties
+    private decimal currentCommissionRate;
+    private double newCommissionPercentage;
+    private string commissionSuccessMessage = "";
+    private string commissionErrorMessage = "";
+
+    // WhatsApp Number Properties
+    private string? currentWhatsAppNumber;
+    private string newWhatsAppNumber = "";
+    private string whatsAppSuccessMessage = "";
+    private string whatsAppErrorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrentRate();
+        await LoadWhatsAppNumber();
+    }
+
+    // --- Commission Rate Methods ---
+    private async Task LoadCurrentRate()
+    {
+        var setting = await DbContext.CommissionSettings.FirstOrDefaultAsync();
+        if (setting == null)
+        {
+            setting = new CommissionSetting { CurrentRate = 0.07m };
+            DbContext.CommissionSettings.Add(setting);
+            await DbContext.SaveChangesAsync();
+        }
+        currentCommissionRate = setting.CurrentRate;
+        newCommissionPercentage = (double)(currentCommissionRate * 100);
+    }
+
+    private async Task UpdateCommissionRate()
+    {
+        commissionSuccessMessage = "";
+        commissionErrorMessage = "";
+
+        if (newCommissionPercentage <= 0 || newCommissionPercentage > 50)
+        {
+            commissionErrorMessage = "Please enter a valid rate between 1 and 50.";
+            return;
+        }
+
+        try
+        {
+            var setting = await DbContext.CommissionSettings.FirstAsync();
+            setting.CurrentRate = (decimal)(newCommissionPercentage / 100.0);
+            await DbContext.SaveChangesAsync();
+
+            currentCommissionRate = setting.CurrentRate;
+            commissionSuccessMessage = $"Commission rate updated to {newCommissionPercentage}%. This will apply to all new orders.";
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            commissionErrorMessage = "Error updating rate: " + ex.Message;
+        }
+    }
+
+    // --- WhatsApp Number Methods ---
+    private async Task LoadWhatsAppNumber()
+    {
+        var setting = await DbContext.AdminSettings.FirstOrDefaultAsync(s => s.Key == "AdminWhatsAppNumber");
+        if (setting != null)
+        {
+            currentWhatsAppNumber = setting.Value;
+            newWhatsAppNumber = setting.Value;
+        }
+    }
+
+    private async Task UpdateWhatsAppNumber()
+    {
+        whatsAppSuccessMessage = "";
+        whatsAppErrorMessage = "";
+
+        if (string.IsNullOrWhiteSpace(newWhatsAppNumber))
+        {
+            whatsAppErrorMessage = "WhatsApp number cannot be empty.";
+            return;
+        }
+
+        try
+        {
+            var setting = await DbContext.AdminSettings.FirstOrDefaultAsync(s => s.Key == "AdminWhatsAppNumber");
+            if (setting == null)
+            {
+                setting = new AdminSetting { Key = "AdminWhatsAppNumber" };
+                DbContext.AdminSettings.Add(setting);
+            }
+
+            setting.Value = newWhatsAppNumber;
+            await DbContext.SaveChangesAsync();
+
+            currentWhatsAppNumber = newWhatsAppNumber;
+            whatsAppSuccessMessage = "Admin WhatsApp number updated successfully.";
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            whatsAppErrorMessage = "Error updating WhatsApp number: " + ex.Message;
+        }
+    }
+}
