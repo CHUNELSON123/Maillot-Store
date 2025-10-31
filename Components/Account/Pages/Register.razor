@@ -1,8 +1,6 @@
 ﻿@page "/Account/Register"
 @attribute [AllowAnonymous]
 
-@rendermode InteractiveServer
-
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
@@ -57,11 +55,11 @@
 
         <div class="form-check mb-3">
             <InputCheckbox @bind-Value="Input.AgreeToTerms" class="form-check-input" id="agree-to-terms" />
-           <a href="/terms-and-conditions">
+            <a href="/terms-and-conditions">
                 <label class="form-check-label" for="agree-to-terms">
                     I agree to Terms and Conditions
                 </label>
-           </a>
+            </a>
             <ValidationMessage For="() => Input.AgreeToTerms" class="text-danger" />
         </div>
 
@@ -135,8 +133,7 @@
         {
             Logger.LogInformation("User created a new account with password.");
 
-            // --- START OF FIX ---
-            // 1. Ensure the "Influencer" role exists (this is in Program.cs but good to double-check)
+            // 1. Ensure the "Influencer" role exists
             var roleExists = await RoleManager.RoleExistsAsync("Influencer");
             if (!roleExists)
             {
@@ -151,7 +148,6 @@
 
             // 4. Redirect to the dashboard
             NavigationManager.NavigateTo("/influencer-dashboard", forceLoad: true);
-            // --- END OF FIX ---
         }
         else
         {

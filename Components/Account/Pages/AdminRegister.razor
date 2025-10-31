@@ -1,8 +1,6 @@
 ﻿@page "/Account/AdminRegister"
 @attribute [AllowAnonymous]
 
-@rendermode InteractiveServer
-
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
@@ -115,7 +113,6 @@
         {
             Logger.LogInformation("Admin user created a new account with password.");
 
-            // --- START OF FIX ---
             // 1. Ensure the "Admin" role exists
             var roleExists = await RoleManager.RoleExistsAsync("Admin");
             if (!roleExists)
@@ -131,7 +128,6 @@
 
             // 4. Redirect to the admin dashboard
             NavigationManager.NavigateTo("/admin/dashboard", forceLoad: true);
-            // --- END OF FIX ---
         }
         else
         {

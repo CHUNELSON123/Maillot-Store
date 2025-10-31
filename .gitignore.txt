@@ -1,17 +1,22 @@
-# Dependencies
-**/[Bb]in/
+# Visual Studio
 **/[Oo]bj/
-
-# User-specific files
-*.suo
-*.user
-*.userosscache
+**/[Bb]in/
+**/*.user
+**/*.suo
+.vs/
 *.sln.docstates
 
 # Build results
-[Bb]uild/
 [Rr]elease/
 [Dd]ebug/
+x64/
+x86/
+[Aa][Rr][Mm]64/
+[Ii][Tt][Aa][Nn][Ii][Aa]64/
+[Ww][Ii][Nn]32/
+[Aa][Nn][Yy][Cc][Pp][Uu]/
+bld/
 
-# Rider
-.idea/
+# Other
+*.DS_Store
+*.npm
